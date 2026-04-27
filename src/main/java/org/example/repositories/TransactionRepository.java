@@ -1,17 +1,9 @@
 package org.example.repositories;
 
-import java.util.List;
-import java.util.Optional;
-
 import org.example.domain.models.AbstractTransaction;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface TransactionRepository {
-    void save(AbstractTransaction transaction);
-
-    Optional<AbstractTransaction> findById(Integer id);
-
-    List<AbstractTransaction> findAll();
-
-    void update(AbstractTransaction transaction);
-    void delete(Integer id);
-}
+@Repository
+public interface TransactionRepository
+  extends JpaRepository<AbstractTransaction, Integer> {}

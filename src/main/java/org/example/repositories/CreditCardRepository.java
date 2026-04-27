@@ -1,18 +1,9 @@
 package org.example.repositories;
 
-import java.util.List;
-import java.util.Optional;
-
 import org.example.domain.models.CreditCard;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface CreditCardRepository {
-
-    void save(CreditCard creditCard);
-
-    Optional<CreditCard> findById(Integer id);
-
-    List<CreditCard> findAll();
-
-    void update(CreditCard creditCard);
-    void delete(Integer id);
-}
+@Repository
+public interface CreditCardRepository
+  extends JpaRepository<CreditCard, Integer> {}

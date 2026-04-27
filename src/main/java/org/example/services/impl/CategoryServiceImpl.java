@@ -6,7 +6,9 @@ import org.example.domain.enums.CategoryType;
 import org.example.domain.models.Category;
 import org.example.repositories.CategoryRepository;
 import org.example.services.CategoryService;
+import org.springframework.stereotype.Service;
 
+@Service
 public class CategoryServiceImpl implements CategoryService {
 
   private final CategoryRepository repoCategory;
@@ -43,7 +45,7 @@ public class CategoryServiceImpl implements CategoryService {
       "O nome não pode ser vazio!"
     );
     category.setName(name);
-    repoCategory.update(category);
+    repoCategory.save(category);
   }
 
   @Override
@@ -67,6 +69,6 @@ public class CategoryServiceImpl implements CategoryService {
     if (categoryId == null || categoryId < 0) throw new RuntimeException(
       "Categoria não encontrada para o ID informado."
     );
-    repoCategory.delete(categoryId);
+    repoCategory.deleteById(categoryId);
   }
 }

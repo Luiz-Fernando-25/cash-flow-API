@@ -8,7 +8,9 @@ import org.example.domain.models.CreditCard;
 import org.example.repositories.AccountRepository;
 import org.example.repositories.CreditCardRepository;
 import org.example.services.CreditCardService;
+import org.springframework.stereotype.Service;
 
+@Service
 public class CreditCardServiceImpl implements CreditCardService {
 
   private final CreditCardRepository repoCreditCard;
@@ -90,7 +92,7 @@ public class CreditCardServiceImpl implements CreditCardService {
       "O nome não pode ser vazio!"
     );
     creditCard.setName(name);
-    repoCreditCard.update(creditCard);
+    repoCreditCard.save(creditCard);
   }
 
   @Override
@@ -106,7 +108,7 @@ public class CreditCardServiceImpl implements CreditCardService {
       throw new RuntimeException("O limite não pode ser negativo.");
     }
     creditCard.setLimit(newLimit);
-    repoCreditCard.update(creditCard);
+    repoCreditCard.save(creditCard);
   }
 
   @Override
@@ -124,7 +126,7 @@ public class CreditCardServiceImpl implements CreditCardService {
       );
     }
     creditCard.setBalance(newBalance);
-    repoCreditCard.update(creditCard);
+    repoCreditCard.save(creditCard);
   }
 
   @Override
@@ -136,7 +138,7 @@ public class CreditCardServiceImpl implements CreditCardService {
       );
     validateDay(closingDay);
     creditCard.setClosingDay(closingDay);
-    repoCreditCard.update(creditCard);
+    repoCreditCard.save(creditCard);
   }
 
   @Override
@@ -148,7 +150,7 @@ public class CreditCardServiceImpl implements CreditCardService {
       );
     validateDay(dueDate);
     creditCard.setDueDate(dueDate);
-    repoCreditCard.update(creditCard);
+    repoCreditCard.save(creditCard);
   }
 
   @Override
@@ -167,7 +169,7 @@ public class CreditCardServiceImpl implements CreditCardService {
       "A conta informada não é um banco."
     );
     creditCard.setBank(bank);
-    repoCreditCard.update(creditCard);
+    repoCreditCard.save(creditCard);
   }
 
   @Override
@@ -175,6 +177,6 @@ public class CreditCardServiceImpl implements CreditCardService {
     if (creditCardId == null || creditCardId < 0) throw new RuntimeException(
       "Cartão de credito não encontrada para o ID informado."
     );
-    repoCreditCard.delete(creditCardId);
+    repoCreditCard.deleteById(creditCardId);
   }
 }

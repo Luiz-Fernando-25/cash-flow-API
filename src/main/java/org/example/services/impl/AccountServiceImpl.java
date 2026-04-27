@@ -8,7 +8,9 @@ import org.example.domain.models.AccountBank;
 import org.example.domain.models.AccountWallet;
 import org.example.repositories.AccountRepository;
 import org.example.services.AccountService;
+import org.springframework.stereotype.Service;
 
+@Service
 public class AccountServiceImpl implements AccountService {
 
   private final AccountRepository repoAccount;
@@ -43,7 +45,7 @@ public class AccountServiceImpl implements AccountService {
       "O nome não pode ser vazio!"
     );
     account.setAccountName(name);
-    repoAccount.update(account);
+    repoAccount.save(account);
   }
 
   @Override
@@ -59,7 +61,7 @@ public class AccountServiceImpl implements AccountService {
         new RuntimeException("Conta não encontrada para o ID informado.")
       );
     account.deposit(value);
-    repoAccount.update(account);
+    repoAccount.save(account);
   }
 
   @Override
@@ -73,7 +75,7 @@ public class AccountServiceImpl implements AccountService {
         new RuntimeException("Conta não encontrada para o ID informado.")
       );
     account.withdraw(value);
-    repoAccount.update(account);
+    repoAccount.save(account);
   }
 
   @Override
@@ -90,6 +92,6 @@ public class AccountServiceImpl implements AccountService {
     if (accountId == null || accountId < 0) throw new RuntimeException(
       "Conta não encontrada para o ID informado."
     );
-    repoAccount.delete(accountId);
+    repoAccount.deleteById(accountId);
   }
 }

@@ -11,7 +11,9 @@ import org.example.domain.models.Transfer;
 import org.example.repositories.TransferRepository;
 import org.example.services.TransactionService;
 import org.example.services.TransferService;
+import org.springframework.stereotype.Service;
 
+@Service
 public class TransferServiceImpl implements TransferService {
 
   private final TransferRepository repoTransfer;
@@ -71,6 +73,6 @@ public class TransferServiceImpl implements TransferService {
       );
     servTransaction.remove(transfer.getOutputTransaction().getId());
     servTransaction.remove(transfer.getInputTransaction().getId());
-    repoTransfer.delete(transferId);
+    repoTransfer.deleteById(transferId);
   }
 }

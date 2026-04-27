@@ -1,18 +1,9 @@
 package org.example.repositories;
 
-import java.util.List;
-import java.util.Optional;
-
 import org.example.domain.models.AbstractAccount;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface AccountRepository {
-    void save(AbstractAccount account);
-
-    Optional<AbstractAccount> findById(Integer id);
-
-    List<AbstractAccount> findAll();
-
-    void update(AbstractAccount account);
-    void delete(Integer id);
-    
-}
+@Repository
+public interface AccountRepository
+  extends JpaRepository<AbstractAccount, Integer> {}
