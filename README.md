@@ -1,22 +1,42 @@
-# Cash Flow CLI - Gerenciador Financeiro (MVP)
+# Cash Flow API - Gerenciador Financeiro (Spring Boot)
 
-O Cash Flow CLI é um backend de gerenciamento financeiro pessoal desenvolvido em Java. O projeto é um MVP (Minimum Viable Product) inspirado em funcionalidades de controle de fluxo de caixa, permitindo o rastreio de despesas, receitas e transferências entre múltiplas contas e cartões de crédito.
+O **Cash Flow API** é um backend de gerenciamento financeiro pessoal desenvolvido em Java. Originalmente concebido como uma aplicação CLI (Command Line Interface) com JDBC puro, o projeto está em **fase de migração** para uma arquitetura RESTful moderna utilizando o ecossistema Spring.
+Trata-se de um MVP (Minimum Viable Product) focado em um usuário único (Single-tenant), inspirado nas principais funcionalidades de controle de fluxo de caixa, permitindo o rastreio de despesas, receitas e transferências entre múltiplas contas e cartões de crédito.
 
-## 🚀 Visão Geral
+## 🚀 Visão Geral e Arquitetura
 
-O sistema foi projetado para ser um clone funcional (core backend) do Mobills, focado em um usuário único (Single-tenant). Ele utiliza conceitos avançados de Orientação a Objetos, como herança de classes e polimorfismo, para gerenciar diferentes tipos de contas e transações de forma eficiente.
+O sistema foi desenhado utilizando os princípios de Clean Architecture e SOLID. Com a atual migração, estamos substituindo a manipulação manual de banco de dados (ORM manual/JDBC) pela robustez do **Spring Data JPA**, e a interface de linha de comando por **Controladores REST**.
 
-## 🛠️ Stack Tecnológica
+## 🛠️ Stack Tecnológica (Atualizada)
 
-- Linguagem: Java 17
+- **Linguagem:** Java 17
 
-- Gerenciador de Dependências: Maven
+- **Framework Principal:** Spring Boot
 
-- Banco de Dados: H2 Database (Persistência local em arquivo)
+- **Gerenciador de Dependências:** Maven
 
-- Acesso a Dados: JDBC com Padrão Repository
+- **Banco de Dados:** (Multi-environment): H2 Database (Dev/Test) e MySQL (Produção/Docker)
 
-- Arquitetura: Camadas (Domain, Repository, Config, Services, UI)
+- **Acesso a Dados:** Spring Data JPA (Hibernate)
+
+- **Mapeamento de Objetos:** MapStruct
+
+- **Boilerplate:** Lombok
+
+- **Infraestrutura:** Docker & Docker Compose
+
+- **Arquitetura:** Camadas (Domain, Repository, Config, Services, Controller)
+
+## 🚧 Status do Projeto: Em Migração (Refatoração CLI ➡️ REST API)
+
+Atualmente, o projeto está passando por uma refatoração arquitetural profunda.
+
+- [x] **Fase 1:** Setup do ecossistema Spring, perfis YAML (h2 e mysql) e limpeza de pacotes legados (UI/CLI).
+- [ ] **Fase 2:** Mapeamento Objeto-Relacional (JPA/Entities) da camada de Domínio. (Em andamento)
+- [ ] **Fase 3:** Refatoração da Camada de Acesso a Dados (Spring Data Repositories).
+- [ ] **Fase 4:** Integração de DTOs (MapStruct) e isolamento dos Serviços de negócio.
+- [ ] **Fase 5:** Exposição da API REST (Controllers e Global Exception Handler).
+- [ ] **Fase 6:** Testes Automatizados e Documentação (Swagger/OpenAPI).
 
 ## 📂 Estrutura de Pacotes
 
@@ -41,36 +61,30 @@ A arquitetura foi desenhada utilizando os princípios de Clean Code e Inversão 
 - [x] **RF-05: Transferências:** Orquestração de movimentação entre duas contas distintas, com espelhamento de transações (Saída A -> Entrada B) e estorno em cascata.
 - [x] **RF-06: Despesas de Cartão:** Registro de transações vinculadas a um cartão de crédito, respeitando a data da fatura atual.
 
-## 🔧 Como Executar
+## 🔧 Como Executar (Ambiente de Desenvolvimento)
 
-1. Pré-requisitos: Ter o JDK 17 e Maven instalados.
+A aplicação agora possui suporte a múltiplos perfis de configuração (profiles).
 
-2. Clonar o repositório:
+1. **Pré-requisitos:** Ter o JDK 17 e Maven instalados.
 
-`git clone https://github.com/luiz-fernando-25/cash-flow-cli.git`
+2. **Clonar o repositório:**
 
-3. Compilar o projeto:
+```
+git clone https://github.com/Luiz-Fernando-25/cash-flow-API.git
+```
 
-`mvn clean install`
+3. **Execução Local (Perfil H2):** A aplicação subirá na porta 8080 e criará automaticamente o banco de dados em arquivo na pasta ./banco/cashflow.
 
-4. Executar a classe Main: O banco de dados H2 será criado automaticamente na pasta ./banco/.
+```
+mvn spring-boot:run -Dspring-boot.run.profiles=h2
+```
+
+4. **Execução com MySQL (Docker):** (Instruções para o docker-compose serão adicionadas conforme a conclusão da infraestrutura MySQL).
 
 ## 🏗️ Próximos Passos (Roadmap)
 
 - [ ] Fechamento de Faturas: Desenvolver a rotina de consolidação de gastos de cartão de crédito baseada no dia de vencimento.
 
-- [ ] Migração Web: Migrar o núcleo da aplicação para Spring Boot, substituindo a interface CLI por uma exposição de API REST.
-
-- [ ] Dockerização: Criar um Dockerfile e docker-compose para facilitar a execução de todo o ambiente.
-
-### 🧪 Testes Automatizados (`src/test/java`)
-
-O projeto conta com uma robusta suíte de testes unitários e de integração utilizando **JUnit 5**, cobrindo 100% dos fluxos principais (Caminho Feliz e Exceções) da camada de `Services`. O banco H2 é recriado de forma isolada a cada execução.
-
----
-
 ## 🤖 Sobre o Desenvolvimento
 
-Este projeto é parte de um estudo aprofundado de arquitetura backend, Orientação a Objetos avançada e modelagem de dados ORM manual (sem o uso de frameworks como Hibernate).
-
-Nota de Transparência: Ferramentas de Inteligência Artificial Generativa (Pair Programming) foram utilizadas durante o desenvolvimento com o objetivo exclusivo de gerar boilerplate code (código repetitivo), formatar e estruturar a suíte de testes (Arrange, Act, Assert) e agilizar a criação dos menus da CLI. Toda a arquitetura do sistema, design de banco de dados, regras de negócios e lógica transacional foram concebidas e direcionadas manualmente.
+Este projeto é parte de um estudo aprofundado de arquitetura backend e evolução de software. A transição de um modelo procedural/manual (JDBC/CLI) para um ecossistema moderno (Spring Boot/JPA) visa consolidar conhecimentos em injeção de dependências, ORM, design de APIs e arquitetura limpa.
