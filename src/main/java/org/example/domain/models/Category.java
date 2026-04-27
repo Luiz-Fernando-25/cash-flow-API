@@ -1,67 +1,61 @@
 package org.example.domain.models;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import java.util.Objects;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.example.domain.enums.CategoryType;
 
-import java.util.Objects;
-
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+//@Builder
+@Entity
+@Table(name = "categoria")
 public class Category {
-    private Integer id;
-    private String name;
-    private CategoryType type;
 
-    public Category(Integer id, String name, CategoryType type) {
-        this.id = id;
-        this.name = name;
-        this.type = type;
-    }
-    
-    public Category(String name, CategoryType type) {
-        this.name = name;
-        this.type = type;
-    }
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Integer id;
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Category category = (Category) o;
-        return Objects.equals(getId(), category.getId());
-    }
+  @NotBlank
+  @Column(name = "nome")
+  private String name;
 
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(getId());
-    }
+  @NotNull
+  @Column(name = "tipo")
+  @Enumerated(EnumType.STRING)
+  private CategoryType type;
 
-    @Override
-    public String toString() {
-        return "Category{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", type=" + type +
-                '}';
-    }
+  public Category(String name, CategoryType type) {
+    this.name = name;
+    this.type = type;
+  }
 
-    public Integer getId() {
-        return id;
-    }
+  @Override
+  public boolean equals(Object o) {
+    if (o == null || getClass() != o.getClass()) return false;
+    Category category = (Category) o;
+    return Objects.equals(getId(), category.getId());
+  }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public CategoryType getType() {
-        return type;
-    }
-
-    public void setType(CategoryType type) {
-        this.type = type;
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(getId());
+  }
 }

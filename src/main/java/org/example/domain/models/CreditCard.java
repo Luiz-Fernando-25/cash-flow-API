@@ -1,117 +1,99 @@
 package org.example.domain.models;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Objects;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+//@Builder
+@Entity
+@Table(name = "cartaocredito")
 public class CreditCard {
-    private Integer id;
-    private String name;
-    private BigDecimal limit;
-    private BigDecimal balance; 
-    private int closingDay;
-    private int dueDate;
-    private AccountBank bank;
 
-    
-    public CreditCard(Integer id, String name, BigDecimal limit, BigDecimal balance, int closingDay, int dueDate, AccountBank bank) {
-        this.id = id;
-        this.name = name;
-        this.limit = limit;
-        this.closingDay = closingDay;
-        this.balance = balance;
-        this.dueDate = dueDate;
-        this.bank = bank;
-    }
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Integer id;
 
-    
+  @NotBlank
+  @Column(name = "nome")
+  private String name;
 
-    public CreditCard(String name, BigDecimal limit, BigDecimal balance, int closingDay, int dueDate, AccountBank bank) {
-        this.name = name;
-        this.limit = limit;
-        this.balance = balance;
-        this.closingDay = closingDay;
-        this.dueDate = dueDate;
-        this.bank = bank;
-    }
+  @Min(0)
+  @Column(name = "limite")
+  private BigDecimal limit = BigDecimal.ZERO;
 
+  @Min(0)
+  @Column(name = "saldo")
+  private BigDecimal balance = BigDecimal.ZERO;
 
+  @NotNull
+  @Min(1)
+  @Max(28)
+  @Column(name = "dia_fechamento")
+  private int closingDay;
 
-    public CreditCard(String name, AccountBank bank) {
-        this.name = name;
-        this.bank = bank;
-    }
+  @NotNull
+  @Min(1)
+  @Max(28)
+  @Column(name = "dia_vencimento")
+  private int dueDate;
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        CreditCard that = (CreditCard) o;
-        return Objects.equals(getId(), that.getId());
-    }
+  @NotNull
+  @JoinColumn(name = "conta_id")
+  @ManyToOne
+  private AccountBank bank;
 
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(getId());
-    }
+  public CreditCard(
+    String name,
+    BigDecimal limit,
+    BigDecimal balance,
+    int closingDay,
+    int dueDate,
+    AccountBank bank
+  ) {
+    this.name = name;
+    this.limit = limit;
+    this.balance = balance;
+    this.closingDay = closingDay;
+    this.dueDate = dueDate;
+    this.bank = bank;
+  }
 
-    @Override
-    public String toString() {
-        return "CreditCard [id=" + id + ", name=" + name + ", limit=" + limit + ", balance=" + balance + ", closingDay="
-                + closingDay + ", dueDate=" + dueDate + ", bank=" + bank + "]";
-    }
+  public CreditCard(String name, AccountBank bank) {
+    this.name = name;
+    this.bank = bank;
+  }
 
-    public Integer getId() {
-        return id;
-    }
+  @Override
+  public boolean equals(Object o) {
+    if (o == null || getClass() != o.getClass()) return false;
+    CreditCard that = (CreditCard) o;
+    return Objects.equals(getId(), that.getId());
+  }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public BigDecimal getLimit() {
-        return limit;
-    }
-
-    public void setLimit(BigDecimal limit) {
-        this.limit = limit;
-    }
-
-    public int getClosingDay() {
-        return closingDay;
-    }
-
-    public void setClosingDay(int closingDay) {
-        this.closingDay = closingDay;
-    }
-
-    public int getDueDate() {
-        return dueDate;
-    }
-
-    public void setDueDate(int dueDate) {
-        this.dueDate = dueDate;
-    }
-
-    public AccountBank getBank() {
-        return bank;
-    }
-
-    public void setBank(AccountBank bank) {
-        this.bank = bank;
-    }
-
-    public BigDecimal getBalance() {
-        return balance;
-    }
-
-    public void setBalance(BigDecimal balance) {
-        this.balance = balance;
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(getId());
+  }
 }

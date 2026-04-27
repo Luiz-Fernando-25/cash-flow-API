@@ -1,15 +1,58 @@
 package org.example.domain.models;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.DiscriminatorType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Objects;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.example.domain.enums.AccountType;
 import org.example.domain.interfaces.Account;
 
+//@AllArgsConstructor
+//@SuperBuilder
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Entity
+@Table(name = "conta")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(
+  name = "tipo_conta",
+  discriminatorType = DiscriminatorType.STRING
+)
 public abstract class AbstractAccount implements Account {
 
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   protected Integer id;
+
+  @NotBlank
+  @Column(name = "nome")
   protected String accountName;
+
+  @Column(name = "saldo_atual")
   protected BigDecimal balance = BigDecimal.ZERO;
+
+  @NotNull
+  @Enumerated(EnumType.STRING)
+  @Column(name = "tipo_conta", insertable = false, updatable = false)
   protected AccountType type;
 
   public AbstractAccount(Integer id, String accountName, BigDecimal balance) {
@@ -50,49 +93,5 @@ public abstract class AbstractAccount implements Account {
       throw new RuntimeException("O valor do saque deve ser maior que zero.");
     }
     this.balance = this.balance.subtract(value);
-  }
-
-  @Override
-  public String toString() {
-    return (
-      "AbstractAccount [id=" +
-      id +
-      ", accountName=" +
-      accountName +
-      ", balance=" +
-      balance +
-      ", type=" +
-      type +
-      "]"
-    );
-  }
-
-  public Integer getId() {
-    return id;
-  }
-
-  public void setId(Integer id) {
-    this.id = id;
-  }
-
-  public String getAccountName() {
-    return accountName;
-  }
-
-  public void setAccountName(String accountName) {
-    this.accountName = accountName;
-  }
-
-  @Override
-  public BigDecimal getBalance() {
-    return this.balance;
-  }
-
-  public void setBalance(BigDecimal balance) {
-    this.balance = balance;
-  }
-
-  public AccountType getType() {
-    return type;
   }
 }

@@ -1,130 +1,112 @@
 package org.example.domain.models;
 
-import org.example.domain.enums.TransactionStatus;
-import org.example.domain.enums.TransactionType;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.DiscriminatorType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Objects;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import org.example.domain.enums.TransactionStatus;
+import org.example.domain.enums.TransactionType;
 
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Entity
+@Table(name = "transacao")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(
+  name = "tipo_transacao",
+  discriminatorType = DiscriminatorType.STRING
+)
 public abstract class AbstractTransaction {
-    protected Integer id;
-    protected BigDecimal transactionValue;
-    protected String description;
-    protected Date date;
-    protected TransactionStatus status;
-    protected Category category;
-    protected TransactionType type;
-    protected AbstractAccount account;
 
-    
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  protected Integer id;
 
-    public AbstractTransaction(BigDecimal transactionValue, String description, Date date, TransactionStatus status,
-            Category category, TransactionType type, AbstractAccount account) {
-        this.transactionValue = transactionValue;
-        this.description = description;
-        this.date = date;
-        this.status = status;
-        this.category = category;
-        this.type = type;
-        this.account = account;
-    }
+  @NotNull
+  @Min(0)
+  @Column(name = "valor")
+  protected BigDecimal transactionValue;
 
-    public AbstractTransaction(Integer id, BigDecimal transactionValue, String description, Date date, TransactionStatus status, Category category, TransactionType type, AbstractAccount account) {
-        this.id = id;
-        this.transactionValue = transactionValue;
-        this.description = description;
-        this.date = date;
-        this.status = status;
-        this.category = category;
-        this.type = type;
-        this.account = account;
-    }
+  @NotBlank
+  @Column(name = "descricao")
+  protected String description;
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        AbstractTransaction that = (AbstractTransaction) o;
-        return Objects.equals(getId(), that.getId());
-    }
+  @NotNull
+  @Column(name = "data")
+  protected Date date;
 
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(getId());
-    }
+  @NotNull
+  @Enumerated(EnumType.STRING)
+  @Column(name = "status")
+  protected TransactionStatus status;
 
+  @NotNull
+  @JoinColumn(name = "categoria_id")
+  @ManyToOne
+  protected Category category;
 
+  @NotNull
+  @Enumerated(EnumType.STRING)
+  @Column(name = "tipo_transacao", insertable = false, updatable = false)
+  protected TransactionType type;
 
-    @Override
-    public String toString() {
-        return "AbstractTransaction [id=" + id + ", transactionValue=" + transactionValue + ", description="
-                + description + ", date=" + date + ", status=" + status + ", category=" + category + ", type=" + type
-                + ", account=" + account + "]";
-    }
+  @NotNull
+  @JoinColumn(name = "conta_id")
+  @ManyToOne
+  protected AbstractAccount account;
 
-    public Integer getId() {
-        return id;
-    }
+  public AbstractTransaction(
+    BigDecimal transactionValue,
+    String description,
+    Date date,
+    TransactionStatus status,
+    Category category,
+    TransactionType type,
+    AbstractAccount account
+  ) {
+    this.transactionValue = transactionValue;
+    this.description = description;
+    this.date = date;
+    this.status = status;
+    this.category = category;
+    this.type = type;
+    this.account = account;
+  }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
+  @Override
+  public boolean equals(Object o) {
+    if (o == null || getClass() != o.getClass()) return false;
+    AbstractTransaction that = (AbstractTransaction) o;
+    return Objects.equals(getId(), that.getId());
+  }
 
-    public BigDecimal getTransactionValue() {
-        return transactionValue;
-    }
-
-    public void setTransactionValue(BigDecimal transactionValue) {
-        this.transactionValue = transactionValue;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
-    }
-
-    public TransactionStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(TransactionStatus status) {
-        this.status = status;
-    }
-
-    public TransactionType getType() {
-        return type;
-    }
-
-    public void setType(TransactionType type) {
-        this.type = type;
-    }
-
-    public Category getCategory() {
-        return category;
-    }
-
-    public void setCategory(Category category) {
-        this.category = category;
-    }
-
-    public AbstractAccount getAccount() {
-        return account;
-    }
-
-    public void setAccount(AbstractAccount account) {
-        this.account = account;
-    }
-
-    
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(getId());
+  }
 }

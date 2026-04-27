@@ -1,24 +1,21 @@
 package org.example.domain.models;
 
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
 import java.math.BigDecimal;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
-import org.example.domain.enums.AccountType;
+@Entity
+@DiscriminatorValue("CARTEIRA")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class AccountWallet extends AbstractAccount {
 
-public class AccountWallet extends AbstractAccount{
-    {
-        type = AccountType.CARTEIRA;
-    }
+  public AccountWallet(Integer id, String accountName, BigDecimal balance) {
+    super(id, accountName, balance);
+  }
 
-        
-    public AccountWallet(Integer id, String accountName, BigDecimal balance) {
-        super(id, accountName, balance);
-    }
-
-    public AccountWallet(String accountName) {
-        super(accountName);
-    }
-
-
-
-
+  public AccountWallet(String accountName) {
+    super(accountName);
+  }
 }
