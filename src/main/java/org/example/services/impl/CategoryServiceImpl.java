@@ -18,7 +18,7 @@ public class CategoryServiceImpl implements CategoryService {
   }
 
   @Override
-  public void create(String name, CategoryType type) {
+  public Category create(String name, CategoryType type) {
     if (name == null || name.trim().isEmpty()) throw new RuntimeException(
       "O nome não pode ser vazio!"
     );
@@ -32,6 +32,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
     Category category = new Category(name, type);
     repoCategory.save(category);
+    return category;
   }
 
   @Override

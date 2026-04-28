@@ -5,7 +5,7 @@ import org.example.domain.enums.CategoryType;
 import org.example.domain.models.Category;
 
 public interface CategoryService {
-  void create(String name, CategoryType type);
+  Category create(String name, CategoryType type);
 
   void changeName(Integer accountid, String name);
 

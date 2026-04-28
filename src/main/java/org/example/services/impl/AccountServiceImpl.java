@@ -20,20 +20,23 @@ public class AccountServiceImpl implements AccountService {
   }
 
   @Override
-  public void create(String name, AccountType type) {
+  public AbstractAccount create(String name, AccountType type) {
     if (name == null || name.trim().isEmpty()) throw new RuntimeException(
       "O nome não pode ser vazio!"
     );
     AbstractAccount account;
     if (AccountType.BANCO == type) {
       account = new AccountBank(name);
+      account.setType(AccountType.BANCO);
     } else if (AccountType.CARTEIRA == type) {
       account = new AccountWallet(name);
+      account.setType(AccountType.CARTEIRA);
     } else {
       throw new RuntimeException("O tipo de conta fornecedido é inexistente!");
     }
 
     repoAccount.save(account);
+    return account;
   }
 
   @Override
