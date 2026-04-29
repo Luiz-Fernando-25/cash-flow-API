@@ -25,7 +25,7 @@ public class CreditCardServiceImpl implements CreditCardService {
   }
 
   @Override
-  public void create(
+  public CreditCard create(
     String name,
     BigDecimal limit,
     BigDecimal balance,
@@ -67,6 +67,7 @@ public class CreditCardServiceImpl implements CreditCardService {
       bank
     );
     repoCreditCard.save(creditCard);
+    return creditCard;
   }
 
   private void validateDay(int day) {

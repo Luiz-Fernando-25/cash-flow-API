@@ -5,7 +5,7 @@ import java.util.List;
 import org.example.domain.models.CreditCard;
 
 public interface CreditCardService {
-  void create(
+  CreditCard create(
     String name,
     BigDecimal limit,
     BigDecimal balance,
