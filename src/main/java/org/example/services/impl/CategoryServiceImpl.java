@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.example.domain.enums.CategoryType;
 import org.example.domain.models.Category;
+import org.example.exceptions.ResourceNotFoundException;
 import org.example.repositories.CategoryRepository;
 import org.example.services.CategoryService;
 import org.springframework.stereotype.Service;
@@ -40,7 +41,9 @@ public class CategoryServiceImpl implements CategoryService {
     Category category = repoCategory
       .findById(categoryId)
       .orElseThrow(() ->
-        new RuntimeException("Id da categoria não encontrada")
+        new ResourceNotFoundException(
+          "Categoria com ID " + categoryId + " não encontrada"
+        )
       );
     if (name == null || name.trim().isEmpty()) throw new RuntimeException(
       "O nome não pode ser vazio!"
@@ -67,8 +70,10 @@ public class CategoryServiceImpl implements CategoryService {
 
   @Override
   public void remove(Integer categoryId) {
-    if (categoryId == null || categoryId < 0) throw new RuntimeException(
-      "Categoria não encontrada para o ID informado."
+    if (
+      categoryId == null || categoryId < 0
+    ) throw new ResourceNotFoundException(
+      "Categoria com ID " + categoryId + " não encontrada"
     );
     repoCategory.deleteById(categoryId);
   }
