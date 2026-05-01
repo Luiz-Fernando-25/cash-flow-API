@@ -112,6 +112,7 @@ public class TransactionServiceImpl implements TransactionService {
         transactionType,
         account
       );
+      transaction.setType(TransactionType.ENTRADA);
     } else if (TransactionType.SAIDA == transactionType) {
       transaction = new TransactionOutput(
         value,
@@ -122,6 +123,7 @@ public class TransactionServiceImpl implements TransactionService {
         transactionType,
         account
       );
+      transaction.setType(TransactionType.SAIDA);
     } else {
       throw new RuntimeException("O tipo de transação não é um tipo valido!");
     }
@@ -138,7 +140,7 @@ public class TransactionServiceImpl implements TransactionService {
   }
 
   @Override
-  public void createCreditCardTransaction(
+  public AbstractTransaction createCreditCardTransaction(
     BigDecimal value,
     String description,
     Date date,
@@ -173,6 +175,7 @@ public class TransactionServiceImpl implements TransactionService {
     );
 
     repoTransaction.save(transaction);
+    return transaction;
   }
 
   @Override

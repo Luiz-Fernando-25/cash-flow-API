@@ -32,11 +32,12 @@ O sistema foi desenhado utilizando os princípios de Clean Architecture e SOLID.
 Atualmente, o projeto está passando por uma refatoração arquitetural profunda.
 
 - [x] **Fase 1:** Setup do ecossistema Spring, perfis YAML (h2 e mysql) e limpeza de pacotes legados (UI/CLI).
-- [x] **Fase 2:** Mapeamento Objeto-Relacional (JPA/Entities) da camada de Domínio. (Em andamento)
+- [x] **Fase 2:** Mapeamento Objeto-Relacional (JPA/Entities) da camada de Domínio.
 - [x] **Fase 3:** Refatoração da Camada de Acesso a Dados (Spring Data Repositories).
-- [ ] **Fase 4:** Integração de DTOs (MapStruct) e isolamento dos Serviços de negócio.
-- [ ] **Fase 5:** Exposição da API REST (Controllers e Global Exception Handler).
-- [ ] **Fase 6:** Testes Automatizados e Documentação (Swagger/OpenAPI).
+- [x] **Fase 4:** Criação de Controllers, DTOs e Mappers (MapStruct).
+- [ ] **Fase 5:** Implementação de Exceptions e Global Exception Handler.
+- [ ] **Fase 6:** Refatoração dos Services e Controllers para o padrão RESTful.
+- [ ] **Fase 7:** Testes Automatizados e Documentação (Swagger/OpenAPI).
 
 ## 📂 Estrutura de Pacotes
 

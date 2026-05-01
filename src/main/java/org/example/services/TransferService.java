@@ -3,15 +3,14 @@ package org.example.services;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
-import org.example.domain.models.AbstractAccount;
 import org.example.domain.models.Transfer;
 
 public interface TransferService {
-  void create(
+  Transfer create(
     BigDecimal value,
     Date date,
-    AbstractAccount accOutput,
-    AbstractAccount accInput
+    Integer accOutputId,
+    Integer accInputId
   );
 
   List<Transfer> listAll();

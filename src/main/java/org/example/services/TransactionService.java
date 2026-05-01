@@ -18,7 +18,7 @@ public interface TransactionService {
     Integer accountId
   );
 
-  void createCreditCardTransaction(
+  AbstractTransaction createCreditCardTransaction(
     BigDecimal value,
     String description,
     Date date,

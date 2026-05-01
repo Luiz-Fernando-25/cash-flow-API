@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.List;
 import org.example.domain.enums.TransactionStatus;
 import org.example.domain.enums.TransactionType;
-import org.example.domain.models.AbstractAccount;
 import org.example.domain.models.AbstractTransaction;
 import org.example.domain.models.Transfer;
 import org.example.repositories.TransferRepository;
@@ -28,11 +27,11 @@ public class TransferServiceImpl implements TransferService {
   }
 
   @Override
-  public void create(
+  public Transfer create(
     BigDecimal value,
     Date dataHoje,
-    AbstractAccount accOutput,
-    AbstractAccount accInput
+    Integer accOutputId,
+    Integer accInputId
   ) {
     AbstractTransaction transactionOutput = servTransaction.create(
       value,
@@ -41,7 +40,7 @@ public class TransferServiceImpl implements TransferService {
       TransactionStatus.EFETIVADA,
       1,
       TransactionType.SAIDA,
-      accOutput.getId()
+      accOutputId
     );
     AbstractTransaction transactionInput = servTransaction.create(
       value,
@@ -50,10 +49,11 @@ public class TransferServiceImpl implements TransferService {
       TransactionStatus.EFETIVADA,
       1,
       TransactionType.ENTRADA,
-      accInput.getId()
+      accInputId
     );
     Transfer transfer = new Transfer(transactionOutput, transactionInput);
     repoTransfer.save(transfer);
+    return transfer;
   }
 
   @Override
