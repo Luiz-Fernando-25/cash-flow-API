@@ -8,15 +8,16 @@ import org.example.domain.enums.TransactionType;
 import org.example.domain.models.AbstractTransaction;
 import org.example.dtos.TransactionRequestDTO;
 import org.example.dtos.TransactionResponseDTO;
+import org.example.dtos.TransactionUpdateDTO;
 import org.example.mappers.TransactionMapper;
 import org.example.services.TransactionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -61,7 +62,16 @@ public class TransactionController {
     );
   }
 
-  @GetMapping
+  @GetMapping(path = "/{id}")
+  public ResponseEntity<TransactionResponseDTO> findById(
+    @PathVariable Integer id
+  ) {
+    return ResponseEntity.ok(
+      transactionMapper.toDto(transactionService.findById(id))
+    );
+  }
+
+  @GetMapping(path = "/all")
   public ResponseEntity<List<TransactionResponseDTO>> listAll(
     @RequestParam(required = false) TransactionStatus status,
     Integer categoryId,
@@ -88,14 +98,21 @@ public class TransactionController {
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
-  @PutMapping
-  public ResponseEntity<Void> replace(
-    @RequestBody @Valid TransactionRequestDTO transactionRequestDTO
+  @PatchMapping(path = "/{id}")
+  public ResponseEntity<TransactionResponseDTO> replace(
+    @PathVariable Integer id,
+    @RequestBody TransactionUpdateDTO dto
   ) {
-    transactionService.changeValue(
-      transactionRequestDTO.id(),
-      transactionRequestDTO.transactionValue()
-    );
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    AbstractTransaction updatedTransaction = transactionService.update(id, dto);
+    return ResponseEntity.ok(transactionMapper.toDto(updatedTransaction));
+  }
+
+  @PatchMapping(path = "/batch")
+  public ResponseEntity<List<TransactionResponseDTO>> updateBatch(
+    @RequestBody List<TransactionUpdateDTO> dtos
+  ) {
+    List<AbstractTransaction> updatedTransactions =
+      transactionService.updateBatch(dtos);
+    return ResponseEntity.ok(transactionMapper.toDtoList(updatedTransactions));
   }
 }

@@ -23,6 +23,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.example.domain.enums.AccountType;
 import org.example.domain.interfaces.Account;
+import org.example.exceptions.BusinessRuleException;
 
 //@AllArgsConstructor
 //@SuperBuilder
@@ -80,7 +81,7 @@ public abstract class AbstractAccount implements Account {
   @Override
   public void deposit(BigDecimal value) {
     if (value == null || value.compareTo(BigDecimal.ZERO) <= 0) {
-      throw new RuntimeException(
+      throw new BusinessRuleException(
         "O valor do depósito deve ser maior que zero."
       );
     }
@@ -90,7 +91,9 @@ public abstract class AbstractAccount implements Account {
   @Override
   public void withdraw(BigDecimal value) {
     if (value == null || value.compareTo(BigDecimal.ZERO) <= 0) {
-      throw new RuntimeException("O valor do saque deve ser maior que zero.");
+      throw new BusinessRuleException(
+        "O valor do saque deve ser maior que zero."
+      );
     }
     this.balance = this.balance.subtract(value);
   }

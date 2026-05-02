@@ -4,17 +4,19 @@ import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.example.domain.enums.AccountType;
+import org.example.domain.models.AbstractAccount;
 import org.example.dtos.AccountRequestDTO;
 import org.example.dtos.AccountResponseDTO;
+import org.example.dtos.AccountUpdateDTO;
 import org.example.mappers.AccountMapper;
 import org.example.services.AccountService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -43,10 +45,14 @@ public class AccountController {
     );
   }
 
-  //quando fizer a refatoração do findall tenho q mudar o required para false
+  @GetMapping(path = "/{id}")
+  public ResponseEntity<AccountResponseDTO> findById(@PathVariable Integer id) {
+    return ResponseEntity.ok(accountMapper.toDto(accountService.findById(id)));
+  }
+
   @GetMapping
   public ResponseEntity<List<AccountResponseDTO>> listAll(
-    @RequestParam(required = true) AccountType accountType
+    @RequestParam(required = false) AccountType accountType
   ) {
     return ResponseEntity.ok(
       accountMapper.toDtoList(accountService.searchAccounts(accountType))
@@ -59,11 +65,12 @@ public class AccountController {
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
-  @PutMapping
-  public ResponseEntity<Void> replace(
-    @RequestBody @Valid AccountRequestDTO accountRequestDTO
+  @PatchMapping(path = "/{id}")
+  public ResponseEntity<AccountResponseDTO> replace(
+    @PathVariable Integer id,
+    @RequestBody AccountUpdateDTO dto
   ) {
-    accountService.changeName(accountRequestDTO.id(), accountRequestDTO.name());
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    AbstractAccount updatedAccount = accountService.update(id, dto.name());
+    return ResponseEntity.ok(accountMapper.toDto(updatedAccount));
   }
 }

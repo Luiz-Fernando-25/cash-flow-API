@@ -1,9 +1,10 @@
 package org.example.services.impl;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.example.domain.enums.CategoryType;
 import org.example.domain.models.Category;
+import org.example.exceptions.BusinessRuleException;
 import org.example.exceptions.ResourceNotFoundException;
 import org.example.repositories.CategoryRepository;
 import org.example.services.CategoryService;
@@ -20,61 +21,71 @@ public class CategoryServiceImpl implements CategoryService {
 
   @Override
   public Category create(String name, CategoryType type) {
-    if (name == null || name.trim().isEmpty()) throw new RuntimeException(
+    if (name == null || name.trim().isEmpty()) throw new BusinessRuleException(
       "O nome não pode ser vazio!"
     );
-    List<Category> categories = repoCategory.findAll();
-    for (Category c : categories) {
-      if (c.getName().equals(name)) {
-        throw new RuntimeException(
-          "Já existe esse nome na lista de catogorias."
-        );
-      }
+
+    boolean exists = repoCategory
+      .findAll()
+      .stream()
+      .anyMatch(c -> c.getName().equalsIgnoreCase(name));
+
+    if (exists) {
+      throw new BusinessRuleException(
+        "Já existe esse nome na lista de catogorias."
+      );
     }
+
     Category category = new Category(name, type);
-    repoCategory.save(category);
-    return category;
+
+    return repoCategory.save(category);
   }
 
   @Override
-  public void changeName(Integer categoryId, String name) {
-    Category category = repoCategory
+  public Category findById(Integer categoryId) {
+    return repoCategory
       .findById(categoryId)
       .orElseThrow(() ->
         new ResourceNotFoundException(
           "Categoria com ID " + categoryId + " não encontrada"
         )
       );
-    if (name == null || name.trim().isEmpty()) throw new RuntimeException(
+  }
+
+  @Override
+  public Category update(Integer categoryId, String name, CategoryType type) {
+    Category category = this.findById(categoryId);
+
+    if (name == null || name.trim().isEmpty()) throw new BusinessRuleException(
       "O nome não pode ser vazio!"
     );
     category.setName(name);
-    repoCategory.save(category);
+
+    if (type != null) category.setType(type);
+
+    return repoCategory.save(category);
   }
 
   @Override
   public List<Category> listAll() {
-    List<Category> categories = repoCategory.findAll();
-    return categories;
+    return repoCategory.findAll();
   }
 
   @Override
   public List<Category> ListForType(CategoryType type) {
-    List<Category> categories = repoCategory.findAll();
-    List<Category> categoriesForType = new ArrayList<>();
-    for (Category c : categories) {
-      if (c.getType() == type) categoriesForType.add(c);
-    }
-    return categoriesForType;
+    return repoCategory
+      .findAll()
+      .stream()
+      .filter(c -> c.getType().equals(type))
+      .collect(Collectors.toList());
   }
 
   @Override
   public void remove(Integer categoryId) {
-    if (
-      categoryId == null || categoryId < 0
-    ) throw new ResourceNotFoundException(
-      "Categoria com ID " + categoryId + " não encontrada"
-    );
-    repoCategory.deleteById(categoryId);
+    Category category = this.findById(categoryId);
+    if (category.getId() == 1) {
+      throw new BusinessRuleException("Não é possivel excluir essa categoria");
+    }
+    repoCategory.delete(category);
   }
 }

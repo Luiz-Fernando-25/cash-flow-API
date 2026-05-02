@@ -20,6 +20,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.example.exceptions.BusinessRuleException;
 
 @Getter
 @Setter
@@ -95,5 +96,23 @@ public class CreditCard {
   @Override
   public int hashCode() {
     return Objects.hashCode(getId());
+  }
+
+  public void deposit(BigDecimal value) {
+    if (value == null || value.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new BusinessRuleException(
+        "O valor informado deve ser maior que zero."
+      );
+    }
+    this.balance = this.balance.add(value);
+  }
+
+  public void withdraw(BigDecimal value) {
+    if (value == null || value.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new BusinessRuleException(
+        "O valor informado deve ser maior que zero."
+      );
+    }
+    this.balance = this.balance.subtract(value);
   }
 }

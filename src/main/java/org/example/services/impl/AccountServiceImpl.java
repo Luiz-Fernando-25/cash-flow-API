@@ -6,6 +6,8 @@ import org.example.domain.enums.AccountType;
 import org.example.domain.models.AbstractAccount;
 import org.example.domain.models.AccountBank;
 import org.example.domain.models.AccountWallet;
+import org.example.exceptions.BusinessRuleException;
+import org.example.exceptions.ResourceNotFoundException;
 import org.example.repositories.AccountRepository;
 import org.example.services.AccountService;
 import org.springframework.stereotype.Service;
@@ -21,7 +23,7 @@ public class AccountServiceImpl implements AccountService {
 
   @Override
   public AbstractAccount create(String name, AccountType type) {
-    if (name == null || name.trim().isEmpty()) throw new RuntimeException(
+    if (name == null || name.trim().isEmpty()) throw new BusinessRuleException(
       "O nome não pode ser vazio!"
     );
     AbstractAccount account;
@@ -32,37 +34,46 @@ public class AccountServiceImpl implements AccountService {
       account = new AccountWallet(name);
       account.setType(AccountType.CARTEIRA);
     } else {
-      throw new RuntimeException("O tipo de conta fornecedido é inexistente!");
+      throw new BusinessRuleException(
+        "O tipo de conta fornecedido é inexistente!"
+      );
     }
 
-    repoAccount.save(account);
-    return account;
+    return repoAccount.save(account);
   }
 
   @Override
-  public void changeName(Integer accountid, String name) {
-    AbstractAccount account = repoAccount
-      .findById(accountid)
-      .orElseThrow(() -> new RuntimeException("Id da conta não encontrada"));
-    if (name == null || name.trim().isEmpty()) throw new RuntimeException(
+  public AbstractAccount findById(Integer accountId) {
+    return repoAccount
+      .findById(accountId)
+      .orElseThrow(() ->
+        new ResourceNotFoundException(
+          "Conta com ID " + accountId + " não encontrada"
+        )
+      );
+  }
+
+  @Override
+  public AbstractAccount update(Integer accountid, String name) {
+    AbstractAccount account = this.findById(accountid);
+
+    if (name == null || name.trim().isEmpty()) throw new BusinessRuleException(
       "O nome não pode ser vazio!"
     );
     account.setAccountName(name);
-    repoAccount.save(account);
+
+    return repoAccount.save(account);
   }
 
   @Override
   public void deposit(Integer accountId, BigDecimal value) {
     if (
       value == null || value.compareTo(BigDecimal.ZERO) <= 0
-    ) throw new RuntimeException(
+    ) throw new BusinessRuleException(
       "O valor do depósito deve ser maior que zero."
     );
-    AbstractAccount account = repoAccount
-      .findById(accountId)
-      .orElseThrow(() ->
-        new RuntimeException("Conta não encontrada para o ID informado.")
-      );
+
+    AbstractAccount account = this.findById(accountId);
     account.deposit(value);
     repoAccount.save(account);
   }
@@ -71,12 +82,11 @@ public class AccountServiceImpl implements AccountService {
   public void withdraw(Integer accountId, BigDecimal value) {
     if (
       value == null || value.compareTo(BigDecimal.ZERO) <= 0
-    ) throw new RuntimeException("O valor do saque deve ser maior que zero.");
-    AbstractAccount account = repoAccount
-      .findById(accountId)
-      .orElseThrow(() ->
-        new RuntimeException("Conta não encontrada para o ID informado.")
-      );
+    ) throw new BusinessRuleException(
+      "O valor do saque deve ser maior que zero."
+    );
+
+    AbstractAccount account = this.findById(accountId);
     account.withdraw(value);
     repoAccount.save(account);
   }
@@ -92,9 +102,6 @@ public class AccountServiceImpl implements AccountService {
 
   @Override
   public void remove(Integer accountId) {
-    if (accountId == null || accountId < 0) throw new RuntimeException(
-      "Conta não encontrada para o ID informado."
-    );
-    repoAccount.deleteById(accountId);
+    repoAccount.delete(this.findById(accountId));
   }
 }

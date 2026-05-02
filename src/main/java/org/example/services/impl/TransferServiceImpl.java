@@ -7,6 +7,8 @@ import org.example.domain.enums.TransactionStatus;
 import org.example.domain.enums.TransactionType;
 import org.example.domain.models.AbstractTransaction;
 import org.example.domain.models.Transfer;
+import org.example.dtos.TransactionUpdateDTO;
+import org.example.exceptions.ResourceNotFoundException;
 import org.example.repositories.TransferRepository;
 import org.example.services.TransactionService;
 import org.example.services.TransferService;
@@ -57,6 +59,52 @@ public class TransferServiceImpl implements TransferService {
   }
 
   @Override
+  public Transfer findById(Integer transferId) {
+    return repoTransfer
+      .findById(transferId)
+      .orElseThrow(() ->
+        new ResourceNotFoundException(
+          "Transferencia com o ID " + transferId + " não encontrada"
+        )
+      );
+  }
+
+  @Override
+  public Transfer update(Integer transferId, BigDecimal value) {
+    Transfer transfer = this.findById(transferId);
+    Integer idTransactionOutput = transfer.getOutputTransaction().getId();
+    Integer idTransactionInput = transfer.getInputTransaction().getId();
+    TransactionUpdateDTO dtoOutput = new TransactionUpdateDTO(
+      idTransactionOutput,
+      value,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    );
+    TransactionUpdateDTO dtoInput = new TransactionUpdateDTO(
+      idTransactionInput,
+      value,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    );
+    servTransaction.update(idTransactionOutput, dtoOutput);
+    servTransaction.update(idTransactionInput, dtoInput);
+
+    return transfer;
+  }
+
+  @Override
   public List<Transfer> listAll() {
     List<Transfer> transfers = repoTransfer.findAll();
     return transfers;
@@ -64,13 +112,7 @@ public class TransferServiceImpl implements TransferService {
 
   @Override
   public void remove(Integer transferId) {
-    Transfer transfer = repoTransfer
-      .findById(transferId)
-      .orElseThrow(() ->
-        new RuntimeException(
-          "Transferencia não encontrada para o ID informado."
-        )
-      );
+    Transfer transfer = this.findById(transferId);
     servTransaction.remove(transfer.getOutputTransaction().getId());
     servTransaction.remove(transfer.getInputTransaction().getId());
     repoTransfer.deleteById(transferId);

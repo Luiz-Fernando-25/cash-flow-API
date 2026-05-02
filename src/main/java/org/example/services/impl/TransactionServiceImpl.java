@@ -1,5 +1,6 @@
 package org.example.services.impl;
 
+import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
@@ -13,11 +14,15 @@ import org.example.domain.models.CreditCard;
 import org.example.domain.models.TransactionCreditCard;
 import org.example.domain.models.TransactionInput;
 import org.example.domain.models.TransactionOutput;
+import org.example.dtos.TransactionUpdateDTO;
+import org.example.exceptions.BusinessRuleException;
+import org.example.exceptions.ResourceNotFoundException;
 import org.example.repositories.AccountRepository;
 import org.example.repositories.CategoryRepository;
 import org.example.repositories.CreditCardRepository;
 import org.example.repositories.TransactionRepository;
 import org.example.services.AccountService;
+import org.example.services.CreditCardService;
 import org.example.services.TransactionService;
 import org.springframework.stereotype.Service;
 
@@ -29,19 +34,22 @@ public class TransactionServiceImpl implements TransactionService {
   private final CreditCardRepository repoCreditCard;
   private final CategoryRepository repoCategory;
   private final AccountService servAccount;
+  private final CreditCardService servCreditCard;
 
   public TransactionServiceImpl(
     TransactionRepository repoTransaction,
     AccountRepository repoAccount,
     CreditCardRepository repoCreditCard,
     CategoryRepository repoCategory,
-    AccountService servAccount
+    AccountService servAccount,
+    CreditCardService servCreditCard
   ) {
     this.repoTransaction = repoTransaction;
     this.repoAccount = repoAccount;
     this.repoCreditCard = repoCreditCard;
     this.repoCategory = repoCategory;
     this.servAccount = servAccount;
+    this.servCreditCard = servCreditCard;
   }
 
   private void validateBasicData(
@@ -51,12 +59,14 @@ public class TransactionServiceImpl implements TransactionService {
   ) {
     if (
       value == null || value.compareTo(BigDecimal.ZERO) <= 0
-    ) throw new RuntimeException(
+    ) throw new BusinessRuleException(
       "O Valor da transação tem que ser um valor positovo e não nulo!"
     );
     if (
       description == null || description.trim().isEmpty()
-    ) throw new RuntimeException("A descrição tem que ter um valor valido!");
+    ) throw new BusinessRuleException(
+      "A descrição tem que ter um valor valido!"
+    );
     if (date == null) date = new Date();
   }
 
@@ -64,7 +74,9 @@ public class TransactionServiceImpl implements TransactionService {
     Category category = repoCategory
       .findById(categoryId)
       .orElseThrow(() ->
-        new RuntimeException("O id da categoria não foi encontrado.")
+        new ResourceNotFoundException(
+          "A categoria com o Id " + categoryId + " não foi encontrada."
+        )
       );
     return category;
   }
@@ -73,7 +85,9 @@ public class TransactionServiceImpl implements TransactionService {
     AbstractAccount account = repoAccount
       .findById(accountId)
       .orElseThrow(() ->
-        new RuntimeException("O id da conta não foi encontrado.")
+        new ResourceNotFoundException(
+          "A conta com o Id " + accountId + " não foi encontrada."
+        )
       );
     return account;
   }
@@ -82,7 +96,11 @@ public class TransactionServiceImpl implements TransactionService {
     CreditCard creditCard = repoCreditCard
       .findById(creditCardId)
       .orElseThrow(() ->
-        new RuntimeException("O id da conta não foi encontrado.")
+        new ResourceNotFoundException(
+          "O Cartão de crédito com o ID " +
+            creditCardId +
+            " não foi encontrado."
+        )
       );
     return creditCard;
   }
@@ -125,7 +143,9 @@ public class TransactionServiceImpl implements TransactionService {
       );
       transaction.setType(TransactionType.SAIDA);
     } else {
-      throw new RuntimeException("O tipo de transação não é um tipo valido!");
+      throw new BusinessRuleException(
+        "O tipo de transação não é um tipo valido!"
+      );
     }
     if (TransactionStatus.EFETIVADA == status) {
       transaction.setStatus(status);
@@ -175,7 +195,83 @@ public class TransactionServiceImpl implements TransactionService {
     );
 
     repoTransaction.save(transaction);
+
+    applyCreditCard(transaction);
     return transaction;
+  }
+
+  @Override
+  public AbstractTransaction findById(Integer transactionId) {
+    return repoTransaction
+      .findById(transactionId)
+      .orElseThrow(() ->
+        new ResourceNotFoundException(
+          "Transação com ID " + transactionId + " não encontrada"
+        )
+      );
+  }
+
+  @Override
+  @Transactional
+  public AbstractTransaction update(
+    Integer transactionId,
+    TransactionUpdateDTO dto
+  ) {
+    AbstractTransaction transaction = this.findById(transactionId);
+
+    if (transaction.getStatus() == TransactionStatus.EFETIVADA) {
+      revertFinancials(transaction);
+    } else {
+      revertCreditCard(transaction);
+    }
+
+    if (transaction instanceof TransactionCreditCard tcc) {
+      if (dto.creditCardId() != null) tcc.setCreditCard(
+        servCreditCard.findById(dto.creditCardId())
+      );
+      if (dto.dueDate() != null) tcc.setDueDate(dto.dueDate());
+      transaction = tcc;
+    }
+
+    if (dto.transactionValue() != null) {
+      if (
+        dto.transactionValue().compareTo(BigDecimal.ZERO) <= 0
+      ) throw new BusinessRuleException(
+        "O valor da transação deve ser positivo"
+      );
+
+      transaction.setTransactionValue(dto.transactionValue());
+    }
+
+    if (dto.description() != null && !dto.description().trim().isEmpty()) {
+      transaction.setDescription(dto.description());
+    }
+
+    if (dto.date() != null) {
+      transaction.setDate(dto.date());
+    }
+
+    if (dto.categoryId() != null) {
+      Category category = validateCategory(dto.categoryId());
+      transaction.setCategory(category);
+    }
+
+    if (dto.accountId() != null) {
+      transaction.setAccount(servAccount.findById(dto.accountId()));
+    }
+
+    TransactionStatus finalStatus =
+      dto.status() != null ? dto.status() : transaction.getStatus();
+
+    if (finalStatus == TransactionStatus.EFETIVADA) {
+      applyFinancials(transaction);
+      transaction.setStatus(TransactionStatus.EFETIVADA);
+    } else {
+      transaction.setStatus(TransactionStatus.PENDENTE);
+      applyCreditCard(transaction);
+    }
+
+    return repoTransaction.save(transaction);
   }
 
   @Override
@@ -209,135 +305,71 @@ public class TransactionServiceImpl implements TransactionService {
       .toList();
   }
 
-  @Override
-  public void changeValue(Integer transactionId, BigDecimal value) {
-    AbstractTransaction transaction = repoTransaction
-      .findById(transactionId)
-      .orElseThrow(() -> new RuntimeException("O id de transação é invalido"));
-    if (
-      value == null || value.compareTo(BigDecimal.ZERO) <= 0
-    ) throw new RuntimeException(
-      "O Valor da transação tem que ser um valor positovo e não nulo!"
-    );
-    if (transaction.getStatus() == TransactionStatus.EFETIVADA) {
-      changeStatus(transactionId, TransactionStatus.PENDENTE);
-      transaction.setTransactionValue(value);
-      transaction.setStatus(TransactionStatus.PENDENTE);
-      repoTransaction.save(transaction);
-      changeStatus(transactionId, TransactionStatus.EFETIVADA);
+  private void applyFinancials(AbstractTransaction transaction) {
+    if (transaction.getType() == TransactionType.ENTRADA) {
+      servAccount.deposit(
+        transaction.getAccount().getId(),
+        transaction.getTransactionValue()
+      );
     } else {
-      transaction.setTransactionValue(value);
-      repoTransaction.save(transaction);
+      servAccount.withdraw(
+        transaction.getAccount().getId(),
+        transaction.getTransactionValue()
+      );
     }
   }
 
-  @Override
-  public void changeDescription(Integer transactionId, String description) {
-    AbstractTransaction transaction = repoTransaction
-      .findById(transactionId)
-      .orElseThrow(() -> new RuntimeException("O id de transação é invalido"));
-    if (
-      description == null || description.trim().isEmpty()
-    ) throw new RuntimeException("A descrição tem que ter um valor valido!");
-
-    transaction.setDescription(description);
-    repoTransaction.save(transaction);
-  }
-
-  @Override
-  public void changeDate(Integer transactionId, Date date) {
-    AbstractTransaction transaction = repoTransaction
-      .findById(transactionId)
-      .orElseThrow(() -> new RuntimeException("O id de transação é invalido"));
-    if (date == null) date = new Date();
-    transaction.setDate(date);
-    repoTransaction.save(transaction);
-  }
-
-  @Override
-  public void changeStatus(Integer transactionId, TransactionStatus status) {
-    AbstractTransaction transaction = repoTransaction
-      .findById(transactionId)
-      .orElseThrow(() -> new RuntimeException("O id de transação é invalido"));
-    if (transaction.getStatus() == status) return;
-    if (TransactionStatus.EFETIVADA == status) {
-      if (TransactionType.ENTRADA == transaction.getType()) {
-        servAccount.deposit(
-          transaction.getAccount().getId(),
-          transaction.getTransactionValue()
-        );
-      } else {
-        servAccount.withdraw(
-          transaction.getAccount().getId(),
-          transaction.getTransactionValue()
-        );
-      }
+  private void revertFinancials(AbstractTransaction transaction) {
+    if (transaction.getType() == TransactionType.ENTRADA) {
+      servAccount.withdraw(
+        transaction.getAccount().getId(),
+        transaction.getTransactionValue()
+      );
     } else {
-      if (TransactionType.ENTRADA == transaction.getType()) {
-        servAccount.withdraw(
-          transaction.getAccount().getId(),
-          transaction.getTransactionValue()
-        );
-      } else {
-        servAccount.deposit(
-          transaction.getAccount().getId(),
-          transaction.getTransactionValue()
-        );
-      }
+      servAccount.deposit(
+        transaction.getAccount().getId(),
+        transaction.getTransactionValue()
+      );
     }
-    transaction.setStatus(status);
-    repoTransaction.save(transaction);
   }
 
-  @Override
-  public void changeCategory(Integer transactionId, Integer categoryId) {
-    AbstractTransaction transaction = repoTransaction
-      .findById(transactionId)
-      .orElseThrow(() -> new RuntimeException("O id de transação é invalido"));
-    Category category = validateCategory(categoryId);
-    transaction.setCategory(category);
-    repoTransaction.save(transaction);
+  private void applyCreditCard(AbstractTransaction transaction) {
+    if (transaction instanceof TransactionCreditCard tcc) {
+      servCreditCard.deposit(
+        tcc.getCreditCard().getId(),
+        tcc.getTransactionValue()
+      );
+    }
   }
 
-  @Override
-  public void changeAccount(Integer transactionId, Integer accountId) {
-    AbstractTransaction transaction = repoTransaction
-      .findById(transactionId)
-      .orElseThrow(() -> new RuntimeException("O id de transação é invalido"));
-    AbstractAccount account = validateAccount(accountId);
-    transaction.setAccount(account);
-    repoTransaction.save(transaction);
-  }
-
-  @Override
-  public void changeCreditCard(Integer transactionId, Integer creditCardId) {
-    AbstractTransaction transaction = repoTransaction
-      .findById(transactionId)
-      .orElseThrow(() -> new RuntimeException("O id de transação é invalido"));
-    CreditCard creditCard = validateCreditCard(creditCardId);
-    if (transaction instanceof TransactionCreditCard transactionCreditCard) {
-      transactionCreditCard.setCreditCard(creditCard);
-      repoTransaction.save(transactionCreditCard);
+  private void revertCreditCard(AbstractTransaction transaction) {
+    if (transaction instanceof TransactionCreditCard tcc) {
+      servCreditCard.withdraw(
+        tcc.getCreditCard().getId(),
+        tcc.getTransactionValue()
+      );
     }
   }
 
   @Override
-  public void changeDateBuy(Integer transactionId, Date dateBuy) {
-    AbstractTransaction transaction = repoTransaction
-      .findById(transactionId)
-      .orElseThrow(() -> new RuntimeException("O id de transação é invalido"));
-    if (transaction instanceof TransactionCreditCard transactionCreditCard) {
-      transactionCreditCard.setDueDate(dateBuy);
-      repoTransaction.save(transactionCreditCard);
-    }
+  @Transactional
+  public List<AbstractTransaction> updateBatch(
+    List<TransactionUpdateDTO> dtos
+  ) {
+    return dtos
+      .stream()
+      .map(dto -> this.update(dto.id(), dto))
+      .toList();
   }
 
   @Override
   public void remove(Integer transactionId) {
-    if (transactionId == null || transactionId < 0) throw new RuntimeException(
-      "Transação não encontrada para o ID informado."
-    );
-    changeStatus(transactionId, TransactionStatus.PENDENTE);
-    repoTransaction.deleteById(transactionId);
+    AbstractTransaction transaction = this.findById(transactionId);
+    if (transaction.getStatus() == TransactionStatus.EFETIVADA) {
+      revertFinancials(transaction);
+    } else {
+      revertCreditCard(transaction);
+    }
+    repoTransaction.delete(transaction);
   }
 }

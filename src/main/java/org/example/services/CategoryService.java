@@ -7,7 +7,9 @@ import org.example.domain.models.Category;
 public interface CategoryService {
   Category create(String name, CategoryType type);
 
-  void changeName(Integer accountid, String name);
+  Category findById(Integer categoryId);
+
+  Category update(Integer categoryId, String name, CategoryType type);
 
   List<Category> listAll();
 

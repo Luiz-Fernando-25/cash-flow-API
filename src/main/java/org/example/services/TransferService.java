@@ -13,6 +13,10 @@ public interface TransferService {
     Integer accInputId
   );
 
+  Transfer findById(Integer transferId);
+
+  Transfer update(Integer transferId, BigDecimal value);
+
   List<Transfer> listAll();
 
   void remove(Integer transferId);

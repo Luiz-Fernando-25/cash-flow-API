@@ -5,6 +5,9 @@ import java.util.List;
 import org.example.domain.models.AbstractAccount;
 import org.example.domain.models.AccountBank;
 import org.example.domain.models.CreditCard;
+import org.example.dtos.CreditCardUpdateDTO;
+import org.example.exceptions.BusinessRuleException;
+import org.example.exceptions.ResourceNotFoundException;
 import org.example.repositories.AccountRepository;
 import org.example.repositories.CreditCardRepository;
 import org.example.services.CreditCardService;
@@ -33,151 +36,115 @@ public class CreditCardServiceImpl implements CreditCardService {
     int dueDate,
     int bankId
   ) {
-    if (name == null || name.trim().isEmpty()) throw new RuntimeException(
+    if (name == null || name.trim().isEmpty()) throw new BusinessRuleException(
       "O nome não pode ser vazio!"
     );
-    if (limit == null) {
-      limit = BigDecimal.ZERO;
-    } else if (limit.compareTo(BigDecimal.ZERO) < 0) {
-      throw new RuntimeException("O limite não pode ser negativo.");
-    }
-    if (balance == null) {
-      balance = BigDecimal.ZERO;
-    } else if (balance.compareTo(BigDecimal.ZERO) < 0) {
-      throw new RuntimeException(
-        "O valor do saldo do cartão não pode ser negativo."
-      );
-    }
+
     validateDay(closingDay);
     validateDay(dueDate);
+
     AbstractAccount account = repoAccount
       .findById(bankId)
       .orElseThrow(() ->
-        new RuntimeException("O id da banco não foi encontrado.")
+        new BusinessRuleException("Banco com ID" + bankId + " não encontrado")
       );
-    if (!(account instanceof AccountBank bank)) throw new RuntimeException(
+    if (!(account instanceof AccountBank bank)) throw new BusinessRuleException(
       "A conta informada não é um banco."
     );
+
     CreditCard creditCard = new CreditCard(
       name,
-      limit,
-      balance,
+      limit == null ? BigDecimal.ZERO : limit,
+      balance == null ? BigDecimal.ZERO : balance,
       closingDay,
       dueDate,
       bank
     );
-    repoCreditCard.save(creditCard);
-    return creditCard;
+
+    return repoCreditCard.save(creditCard);
   }
 
   private void validateDay(int day) {
-    if (!(day > 0 && day <= 28)) throw new RuntimeException(
+    if (!(day > 0 && day <= 28)) throw new BusinessRuleException(
       "O dia tem que ser um nomero entre 1 e 28"
     );
   }
 
   @Override
+  public CreditCard findById(Integer creditCardId) {
+    return repoCreditCard
+      .findById(creditCardId)
+      .orElseThrow(() ->
+        new ResourceNotFoundException(
+          "Cartão com ID " + creditCardId + " não encontrado"
+        )
+      );
+  }
+
+  @Override
   public List<CreditCard> listAll() {
-    List<CreditCard> creditCards = repoCreditCard.findAll();
-    return creditCards;
+    return repoCreditCard.findAll();
   }
 
   @Override
-  public void changeName(Integer creditCardId, String name) {
-    CreditCard creditCard = repoCreditCard
-      .findById(creditCardId)
-      .orElseThrow(() ->
-        new RuntimeException("Id do cartão de credito não encontrada")
-      );
-    if (name == null || name.trim().isEmpty()) throw new RuntimeException(
-      "O nome não pode ser vazio!"
-    );
-    creditCard.setName(name);
+  public void deposit(Integer creditCardId, BigDecimal value) {
+    if (
+      value == null || value.compareTo(BigDecimal.ZERO) <= 0
+    ) throw new BusinessRuleException("Valor deve ser positivo.");
+    CreditCard creditCard = this.findById(creditCardId);
+    creditCard.deposit(value);
     repoCreditCard.save(creditCard);
   }
 
   @Override
-  public void changeLimit(Integer creditCardId, BigDecimal newLimit) {
-    CreditCard creditCard = repoCreditCard
-      .findById(creditCardId)
-      .orElseThrow(() ->
-        new RuntimeException("Id do cartão de credito não encontrada")
-      );
-    if (newLimit == null) {
-      newLimit = BigDecimal.ZERO;
-    } else if (newLimit.compareTo(BigDecimal.ZERO) < 0) {
-      throw new RuntimeException("O limite não pode ser negativo.");
-    }
-    creditCard.setLimit(newLimit);
-    repoCreditCard.save(creditCard);
-  }
-
-  @Override
-  public void changeBalance(Integer creditCardId, BigDecimal newBalance) {
-    CreditCard creditCard = repoCreditCard
-      .findById(creditCardId)
-      .orElseThrow(() ->
-        new RuntimeException("Id do cartão de credito não encontrada")
-      );
-    if (newBalance == null) {
-      newBalance = BigDecimal.ZERO;
-    } else if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
-      throw new RuntimeException(
-        "O valor do saldo do cartão não pode ser negativo."
-      );
-    }
-    creditCard.setBalance(newBalance);
-    repoCreditCard.save(creditCard);
-  }
-
-  @Override
-  public void changeClosingDay(Integer creditCardId, int closingDay) {
-    CreditCard creditCard = repoCreditCard
-      .findById(creditCardId)
-      .orElseThrow(() ->
-        new RuntimeException("Id do cartão de credito não encontrada")
-      );
-    validateDay(closingDay);
-    creditCard.setClosingDay(closingDay);
-    repoCreditCard.save(creditCard);
-  }
-
-  @Override
-  public void changeDueDate(Integer creditCardId, int dueDate) {
-    CreditCard creditCard = repoCreditCard
-      .findById(creditCardId)
-      .orElseThrow(() ->
-        new RuntimeException("Id do cartão de credito não encontrada")
-      );
-    validateDay(dueDate);
-    creditCard.setDueDate(dueDate);
-    repoCreditCard.save(creditCard);
-  }
-
-  @Override
-  public void changeBank(Integer creditCardId, int bankId) {
-    CreditCard creditCard = repoCreditCard
-      .findById(creditCardId)
-      .orElseThrow(() ->
-        new RuntimeException("Id do cartão de credito não encontrada")
-      );
-    AbstractAccount account = repoAccount
-      .findById(bankId)
-      .orElseThrow(() ->
-        new RuntimeException("O id da banco não foi encontrado.")
-      );
-    if (!(account instanceof AccountBank bank)) throw new RuntimeException(
-      "A conta informada não é um banco."
-    );
-    creditCard.setBank(bank);
+  public void withdraw(Integer creditCardId, BigDecimal value) {
+    if (
+      value == null || value.compareTo(BigDecimal.ZERO) <= 0
+    ) throw new BusinessRuleException("Valor deve ser positivo.");
+    CreditCard creditCard = this.findById(creditCardId);
+    creditCard.withdraw(value);
     repoCreditCard.save(creditCard);
   }
 
   @Override
   public void remove(Integer creditCardId) {
-    if (creditCardId == null || creditCardId < 0) throw new RuntimeException(
-      "Cartão de credito não encontrada para o ID informado."
-    );
-    repoCreditCard.deleteById(creditCardId);
+    repoCreditCard.delete(this.findById(creditCardId));
+  }
+
+  @Override
+  public CreditCard update(Integer creditCardId, CreditCardUpdateDTO dto) {
+    CreditCard creditCard = this.findById(creditCardId);
+
+    if (dto.name() != null) creditCard.setName(dto.name());
+
+    if (dto.limit() != null) {
+      if (
+        dto.limit().compareTo(BigDecimal.ZERO) < 0
+      ) throw new BusinessRuleException("O limite não pode ser negativo");
+      creditCard.setLimit(dto.limit());
+    }
+
+    if (dto.closingDay() != 0) {
+      validateDay(dto.closingDay());
+      creditCard.setClosingDay(dto.closingDay());
+    }
+
+    if (dto.dueDate() != 0) {
+      validateDay(dto.dueDate());
+      creditCard.setDueDate(dto.dueDate());
+    }
+
+    if (dto.bankId() != 0) {
+      AbstractAccount account = repoAccount
+        .findById(dto.bankId())
+        .orElseThrow(() ->
+          new BusinessRuleException(
+            "Banco com ID " + dto.bankId() + " não encontrado"
+          )
+        );
+      if (account instanceof AccountBank bank) creditCard.setBank(bank);
+    }
+
+    return repoCreditCard.save(creditCard);
   }
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import org.example.domain.enums.TransactionStatus;
 import org.example.domain.enums.TransactionType;
 import org.example.domain.models.AbstractTransaction;
+import org.example.dtos.TransactionUpdateDTO;
 
 public interface TransactionService {
   AbstractTransaction create(
@@ -27,6 +28,10 @@ public interface TransactionService {
     Integer cardId
   );
 
+  AbstractTransaction findById(Integer transactionId);
+
+  AbstractTransaction update(Integer transactionId, TransactionUpdateDTO dto);
+
   List<AbstractTransaction> searchTransactions(
     TransactionStatus status,
     Integer categoryId,
@@ -35,21 +40,7 @@ public interface TransactionService {
     Integer cardId
   );
 
-  void changeValue(Integer transactionId, BigDecimal value);
-
-  void changeDescription(Integer transactionId, String description);
-
-  void changeDate(Integer transactionId, Date date);
-
-  void changeStatus(Integer transactionId, TransactionStatus status);
-
-  void changeCategory(Integer transactionId, Integer categoryId);
-
-  void changeAccount(Integer transactionId, Integer accountId);
-
-  void changeCreditCard(Integer transactionId, Integer creditCardId);
-
-  void changeDateBuy(Integer transactionId, Date dateBuy);
+  List<AbstractTransaction> updateBatch(List<TransactionUpdateDTO> dtos);
 
   void remove(Integer transactionId);
 }

@@ -8,7 +8,9 @@ import org.example.domain.models.AbstractAccount;
 public interface AccountService {
   AbstractAccount create(String name, AccountType type);
 
-  void changeName(Integer accountid, String name);
+  AbstractAccount findById(Integer accountId);
+
+  AbstractAccount update(Integer accountId, String name);
 
   void deposit(Integer accountId, BigDecimal value);
 

@@ -3,6 +3,7 @@ package org.example.services;
 import java.math.BigDecimal;
 import java.util.List;
 import org.example.domain.models.CreditCard;
+import org.example.dtos.CreditCardUpdateDTO;
 
 public interface CreditCardService {
   CreditCard create(
@@ -14,19 +15,15 @@ public interface CreditCardService {
     int bankId
   );
 
+  CreditCard findById(Integer creditCardId);
+
+  CreditCard update(Integer creditCardId, CreditCardUpdateDTO dto);
+
+  void deposit(Integer creditCardId, BigDecimal value);
+
+  void withdraw(Integer creditCardId, BigDecimal value);
+
   List<CreditCard> listAll();
-
-  void changeName(Integer creditCardId, String name);
-
-  void changeLimit(Integer creditCardId, BigDecimal newlimit);
-
-  void changeBalance(Integer creditCardId, BigDecimal newBalance);
-
-  void changeClosingDay(Integer creditCardId, int closingDay);
-
-  void changeDueDate(Integer creditCardId, int dueDate);
-
-  void changeBank(Integer creditCardId, int bankId);
 
   void remove(Integer creditCardId);
 }

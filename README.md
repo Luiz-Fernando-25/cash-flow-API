@@ -35,8 +35,8 @@ Atualmente, o projeto está passando por uma refatoração arquitetural profunda
 - [x] **Fase 2:** Mapeamento Objeto-Relacional (JPA/Entities) da camada de Domínio.
 - [x] **Fase 3:** Refatoração da Camada de Acesso a Dados (Spring Data Repositories).
 - [x] **Fase 4:** Criação de Controllers, DTOs e Mappers (MapStruct).
-- [ ] **Fase 5:** Implementação de Exceptions e Global Exception Handler.
-- [ ] **Fase 6:** Refatoração dos Services e Controllers para o padrão RESTful.
+- [x] **Fase 5:** Implementação de Exceptions e Global Exception Handler.
+- [x] **Fase 6:** Refatoração dos Services e Controllers para o padrão RESTful.
 - [ ] **Fase 7:** Testes Automatizados e Documentação (Swagger/OpenAPI).
 
 ## 📂 Estrutura de Pacotes
