@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -54,18 +55,16 @@ public class CategoryController {
   }
 
   @GetMapping(path = "/all")
-  public ResponseEntity<List<CategoryResponseDTO>> listAll() {
+  public ResponseEntity<List<CategoryResponseDTO>> listAll(
+    @RequestParam(required = false) CategoryType type
+  ) {
+    if (type != null) {
+      return ResponseEntity.ok(
+        categoryMapper.toDtoList(categoryService.ListForType(type))
+      );
+    }
     return ResponseEntity.ok(
       categoryMapper.toDtoList(categoryService.listAll())
-    );
-  }
-
-  @GetMapping(path = "/{type}")
-  public ResponseEntity<List<CategoryResponseDTO>> findByType(
-    @PathVariable CategoryType type
-  ) {
-    return ResponseEntity.ok(
-      categoryMapper.toDtoList(categoryService.ListForType(type))
     );
   }
 

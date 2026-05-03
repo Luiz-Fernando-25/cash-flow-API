@@ -74,10 +74,10 @@ public class TransactionController {
   @GetMapping(path = "/all")
   public ResponseEntity<List<TransactionResponseDTO>> listAll(
     @RequestParam(required = false) TransactionStatus status,
-    Integer categoryId,
-    TransactionType transactionType,
-    Integer accountId,
-    Integer cardId
+    @RequestParam(required = false) Integer categoryId,
+    @RequestParam(required = false) TransactionType transactionType,
+    @RequestParam(required = false) Integer accountId,
+    @RequestParam(required = false) Integer cardId
   ) {
     return ResponseEntity.ok(
       transactionMapper.toDtoList(

@@ -8,3 +8,6 @@ spring:
 
   jackson:
     default-property-inclusion: NON_NULL
+
+springdoc:
+  override-with-generic-response: false
