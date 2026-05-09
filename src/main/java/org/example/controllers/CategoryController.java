@@ -1,6 +1,7 @@
 package org.example.controllers;
 
 import jakarta.validation.Valid;
+import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.example.domain.enums.CategoryType;
@@ -14,13 +15,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
 @RequestMapping("/api/categories")
@@ -34,15 +36,19 @@ public class CategoryController {
   public ResponseEntity<CategoryResponseDTO> save(
     @RequestBody @Valid CategoryRequestDTO categoryRequestDTO
   ) {
-    return new ResponseEntity<>(
-      categoryMapper.toDto(
-        categoryService.create(
-          categoryRequestDTO.name(),
-          categoryRequestDTO.type()
-        )
-      ),
-      HttpStatus.CREATED
+    CategoryResponseDTO responseDTO = categoryMapper.toDto(
+      categoryService.create(
+        categoryRequestDTO.name(),
+        categoryRequestDTO.type()
+      )
     );
+
+    URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+      .path("/{id}")
+      .buildAndExpand(responseDTO.id())
+      .toUri();
+
+    return ResponseEntity.created(location).body(responseDTO);
   }
 
   @GetMapping(path = "/{id}")
@@ -54,17 +60,12 @@ public class CategoryController {
     );
   }
 
-  @GetMapping(path = "/all")
+  @GetMapping
   public ResponseEntity<List<CategoryResponseDTO>> listAll(
     @RequestParam(required = false) CategoryType type
   ) {
-    if (type != null) {
-      return ResponseEntity.ok(
-        categoryMapper.toDtoList(categoryService.ListForType(type))
-      );
-    }
     return ResponseEntity.ok(
-      categoryMapper.toDtoList(categoryService.listAll())
+      categoryMapper.toDtoList(categoryService.listAll(type))
     );
   }
 
@@ -74,7 +75,7 @@ public class CategoryController {
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
-  @PutMapping(path = "/{id}")
+  @PatchMapping(path = "/{id}")
   public ResponseEntity<CategoryResponseDTO> replace(
     @PathVariable Integer id,
     @RequestBody CategoryUpdateDTO dto

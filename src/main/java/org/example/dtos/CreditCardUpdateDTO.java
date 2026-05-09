@@ -5,11 +5,10 @@ import lombok.Builder;
 
 @Builder
 public record CreditCardUpdateDTO(
-  Integer id,
   String name,
   BigDecimal limit,
   BigDecimal balance,
-  int closingDay,
-  int dueDate,
-  int bankId
+  Integer closingDay,
+  Integer dueDate,
+  Integer bankId
 ) {}

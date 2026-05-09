@@ -10,7 +10,6 @@ import org.example.domain.enums.TransactionType;
 
 @Builder
 public record TransactionRequestDTO(
-  Integer id,
   @NotNull(message = "O valor da transação é obrigatório")
   BigDecimal transactionValue,
   @NotBlank(message = "A descrição da transação é obrigatória")

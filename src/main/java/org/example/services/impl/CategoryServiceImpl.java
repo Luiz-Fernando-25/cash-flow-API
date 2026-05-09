@@ -67,17 +67,16 @@ public class CategoryServiceImpl implements CategoryService {
   }
 
   @Override
-  public List<Category> listAll() {
-    return repoCategory.findAll();
-  }
-
-  @Override
-  public List<Category> ListForType(CategoryType type) {
-    return repoCategory
-      .findAll()
-      .stream()
-      .filter(c -> c.getType().equals(type))
-      .collect(Collectors.toList());
+  public List<Category> listAll(CategoryType type) {
+    if (type == null) {
+      return repoCategory.findAll();
+    } else {
+      return repoCategory
+        .findAll()
+        .stream()
+        .filter(c -> c.getType().equals(type))
+        .collect(Collectors.toList());
+    }
   }
 
   @Override

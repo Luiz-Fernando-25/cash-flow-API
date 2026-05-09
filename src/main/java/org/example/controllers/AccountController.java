@@ -1,6 +1,7 @@
 package org.example.controllers;
 
 import jakarta.validation.Valid;
+import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.example.domain.enums.AccountType;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
 @RequestMapping("/api/accounts")
@@ -34,15 +36,16 @@ public class AccountController {
   public ResponseEntity<AccountResponseDTO> save(
     @RequestBody @Valid AccountRequestDTO accountRequestDTO
   ) {
-    return new ResponseEntity<>(
-      accountMapper.toDto(
-        accountService.create(
-          accountRequestDTO.name(),
-          accountRequestDTO.type()
-        )
-      ),
-      HttpStatus.CREATED
+    AccountResponseDTO responseDTO = accountMapper.toDto(
+      accountService.create(accountRequestDTO.name(), accountRequestDTO.type())
     );
+
+    URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+      .path("/{id}")
+      .buildAndExpand(responseDTO.id())
+      .toUri();
+
+    return ResponseEntity.created(location).body(responseDTO);
   }
 
   @GetMapping(path = "/{id}")

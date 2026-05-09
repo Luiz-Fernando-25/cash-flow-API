@@ -113,6 +113,38 @@ public class TransactionServiceImpl implements TransactionService {
     TransactionStatus status,
     Integer categoryId,
     TransactionType transactionType,
+    Integer accountId,
+    Integer cardId
+  ) {
+    if (cardId != null) {
+      return createCreditCardTransaction(
+        value,
+        description,
+        date,
+        categoryId,
+        accountId,
+        cardId
+      );
+    } else {
+      return createNormalTransaction(
+        value,
+        description,
+        date,
+        status,
+        categoryId,
+        transactionType,
+        accountId
+      );
+    }
+  }
+
+  private AbstractTransaction createNormalTransaction(
+    BigDecimal value,
+    String description,
+    Date date,
+    TransactionStatus status,
+    Integer categoryId,
+    TransactionType transactionType,
     Integer accountId
   ) {
     validateBasicData(value, description, date);
@@ -159,8 +191,7 @@ public class TransactionServiceImpl implements TransactionService {
     return transaction;
   }
 
-  @Override
-  public AbstractTransaction createCreditCardTransaction(
+  private AbstractTransaction createCreditCardTransaction(
     BigDecimal value,
     String description,
     Date date,

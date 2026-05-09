@@ -36,13 +36,13 @@ public class GlobalExceptionHandler {
   ) {
     StandardError err = StandardError.builder()
       .timestamp(LocalDateTime.now())
-      .status(HttpStatus.BAD_REQUEST.value())
+      .status(HttpStatus.UNPROCESSABLE_CONTENT.value())
       .error("Business rule violation")
       .message(ex.getMessage())
       .path(request.getRequestURI())
       .build();
 
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(err);
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -62,7 +62,7 @@ public class GlobalExceptionHandler {
       .status(HttpStatus.BAD_REQUEST.value())
       .error("Validation error")
       .message("Um ou mais campos estão inválidos")
-      .validationErros(errors)
+      .validationErrors(errors)
       .path(request.getRequestURI())
       .build();
 

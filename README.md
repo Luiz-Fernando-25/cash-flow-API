@@ -64,23 +64,40 @@ A arquitetura foi desenhada utilizando os princípios de Clean Code e Inversão 
 
 ## 🔧 Como Executar (Ambiente de Desenvolvimento)
 
-A aplicação agora possui suporte a múltiplos perfis de configuração (profiles).
+A aplicação possui suporte a múltiplos perfis de configuração (profiles).
 
 1. **Pré-requisitos:** Ter o JDK 17 e Maven instalados.
 
 2. **Clonar o repositório:**
 
-```
+```bash
 git clone https://github.com/Luiz-Fernando-25/cash-flow-API.git
 ```
 
-3. **Execução Local (Perfil H2):** A aplicação subirá na porta 8080 e criará automaticamente o banco de dados em arquivo na pasta ./banco/cashflow.
+3. **Compilar o projeto** *(obrigatório antes de abrir no VS Code ou qualquer IDE)*:
 
+```bash
+./mvnw compile
 ```
-mvn spring-boot:run -Dspring-boot.run.profiles=h2
+> Este passo é necessário porque o **MapStruct** gera as implementações dos mappers em tempo de compilação. Sem ele, o editor pode exibir falsos erros nos arquivos `*Mapper.java`. Se estiver usando **VS Code**, essa compilação é feita automaticamente ao abrir o projeto.
+
+4. **Execução Local (Perfil H2):** A aplicação subirá na porta `8080` com banco de dados em memória.
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=h2
 ```
 
-4. **Execução com MySQL (Docker):** (Instruções para o docker-compose serão adicionadas conforme a conclusão da infraestrutura MySQL).
+5. **Execução com MySQL (via Docker Compose):**
+
+```bash
+docker-compose up -d
+./mvnw spring-boot:run -Dspring-boot.run.profiles=mysql
+```
+
+6. **Documentação interativa (Swagger UI):** Após iniciar, acesse:
+```
+http://localhost:8080/swagger-ui/index.html
+```
 
 ## 🏗️ Próximos Passos (Roadmap)
 

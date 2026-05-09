@@ -1,6 +1,7 @@
 package org.example.controllers;
 
 import jakarta.validation.Valid;
+import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.example.dtos.CreditCardRequestDTO;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
 @RequestMapping("/api/credit-cards")
@@ -31,19 +33,23 @@ public class CreditCardController {
   public ResponseEntity<CreditCardResponseDTO> save(
     @RequestBody @Valid CreditCardRequestDTO creditCardRequestDTO
   ) {
-    return new ResponseEntity<>(
-      creditCardMapper.toDto(
-        creditCardService.create(
-          creditCardRequestDTO.name(),
-          creditCardRequestDTO.limit(),
-          creditCardRequestDTO.balance(),
-          creditCardRequestDTO.closingDay(),
-          creditCardRequestDTO.dueDate(),
-          creditCardRequestDTO.bankId()
-        )
-      ),
-      HttpStatus.CREATED
+    CreditCardResponseDTO responseDTO = creditCardMapper.toDto(
+      creditCardService.create(
+        creditCardRequestDTO.name(),
+        creditCardRequestDTO.limit(),
+        creditCardRequestDTO.balance(),
+        creditCardRequestDTO.closingDay(),
+        creditCardRequestDTO.dueDate(),
+        creditCardRequestDTO.bankId()
+      )
     );
+
+    URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+      .path("/{id}")
+      .buildAndExpand(responseDTO.id())
+      .toUri();
+
+    return ResponseEntity.created(location).body(responseDTO);
   }
 
   @GetMapping(path = "/{id}")
@@ -55,7 +61,7 @@ public class CreditCardController {
     );
   }
 
-  @GetMapping(path = "/all")
+  @GetMapping
   public ResponseEntity<List<CreditCardResponseDTO>> listAll() {
     return ResponseEntity.ok(
       creditCardMapper.toDtoList(creditCardService.listAll())

@@ -10,9 +10,9 @@ public interface CreditCardService {
     String name,
     BigDecimal limit,
     BigDecimal balance,
-    int closingDay,
-    int dueDate,
-    int bankId
+    Integer closingDay,
+    Integer dueDate,
+    Integer bankId
   );
 
   CreditCard findById(Integer creditCardId);

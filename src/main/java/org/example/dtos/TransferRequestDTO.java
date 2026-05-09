@@ -7,7 +7,6 @@ import lombok.Builder;
 
 @Builder
 public record TransferRequestDTO(
-  Integer id,
   @NotNull(message = "O valor é obrigatório") BigDecimal value,
   @NotNull(message = "A data é obrigatória") Date date,
   @NotNull(message = "A saída é obrigatória") Integer accOutputId,

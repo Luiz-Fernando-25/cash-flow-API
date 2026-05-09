@@ -32,9 +32,9 @@ public class CreditCardServiceImpl implements CreditCardService {
     String name,
     BigDecimal limit,
     BigDecimal balance,
-    int closingDay,
-    int dueDate,
-    int bankId
+    Integer closingDay,
+    Integer dueDate,
+    Integer bankId
   ) {
     if (name == null || name.trim().isEmpty()) throw new BusinessRuleException(
       "O nome não pode ser vazio!"
@@ -64,9 +64,9 @@ public class CreditCardServiceImpl implements CreditCardService {
     return repoCreditCard.save(creditCard);
   }
 
-  private void validateDay(int day) {
-    if (!(day > 0 && day <= 28)) throw new BusinessRuleException(
-      "O dia tem que ser um nomero entre 1 e 28"
+  private void validateDay(Integer day) {
+    if (day == null || !(day > 0 && day <= 28)) throw new BusinessRuleException(
+      "O dia tem que ser um número entre 1 e 28"
     );
   }
 
@@ -124,17 +124,17 @@ public class CreditCardServiceImpl implements CreditCardService {
       creditCard.setLimit(dto.limit());
     }
 
-    if (dto.closingDay() != 0) {
+    if (dto.closingDay() != null) {
       validateDay(dto.closingDay());
       creditCard.setClosingDay(dto.closingDay());
     }
 
-    if (dto.dueDate() != 0) {
+    if (dto.dueDate() != null) {
       validateDay(dto.dueDate());
       creditCard.setDueDate(dto.dueDate());
     }
 
-    if (dto.bankId() != 0) {
+    if (dto.bankId() != null) {
       AbstractAccount account = repoAccount
         .findById(dto.bankId())
         .orElseThrow(() ->

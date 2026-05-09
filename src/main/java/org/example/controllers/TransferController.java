@@ -1,6 +1,7 @@
 package org.example.controllers;
 
 import jakarta.validation.Valid;
+import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.example.domain.models.Transfer;
@@ -13,15 +14,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
-@RequestMapping("/api/transfer")
+@RequestMapping("/api/transfers")
 @RequiredArgsConstructor
 public class TransferController {
 
@@ -32,17 +34,21 @@ public class TransferController {
   public ResponseEntity<TransferResponseDTO> save(
     @RequestBody @Valid TransferRequestDTO transferRequestDTO
   ) {
-    return new ResponseEntity<>(
-      transferMapper.toDto(
-        transferService.create(
-          transferRequestDTO.value(),
-          transferRequestDTO.date(),
-          transferRequestDTO.accOutputId(),
-          transferRequestDTO.accInputId()
-        )
-      ),
-      HttpStatus.CREATED
+    TransferResponseDTO responseDTO = transferMapper.toDto(
+      transferService.create(
+        transferRequestDTO.value(),
+        transferRequestDTO.date(),
+        transferRequestDTO.accOutputId(),
+        transferRequestDTO.accInputId()
+      )
     );
+
+    URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+      .path("/{id}")
+      .buildAndExpand(responseDTO.id())
+      .toUri();
+
+    return ResponseEntity.created(location).body(responseDTO);
   }
 
   @GetMapping(path = "/{id}")
@@ -54,7 +60,7 @@ public class TransferController {
     );
   }
 
-  @GetMapping(path = "/all")
+  @GetMapping
   public ResponseEntity<List<TransferResponseDTO>> listAll() {
     return ResponseEntity.ok(
       transferMapper.toDtoList(transferService.listAll())
@@ -67,15 +73,12 @@ public class TransferController {
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
-  @PutMapping(path = "/{id}")
+  @PatchMapping(path = "/{id}")
   public ResponseEntity<TransferResponseDTO> replace(
-    @PathVariable String id,
+    @PathVariable Integer id,
     @RequestBody TransferUpdateDTO dto
   ) {
-    Transfer updatedTransfer = transferService.update(
-      Integer.parseInt(id),
-      dto.value()
-    );
+    Transfer updatedTransfer = transferService.update(id, dto.value());
 
     return ResponseEntity.ok(transferMapper.toDto(updatedTransfer));
   }

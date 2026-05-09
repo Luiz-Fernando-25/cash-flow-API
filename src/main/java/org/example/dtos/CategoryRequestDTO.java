@@ -7,7 +7,6 @@ import org.example.domain.enums.CategoryType;
 
 @Builder
 public record CategoryRequestDTO(
-  Integer id,
   @NotBlank(message = "O nome não pode ser vazio") String name,
   @NotNull(message = "O tipo é obrigatório") CategoryType type
 ) {}

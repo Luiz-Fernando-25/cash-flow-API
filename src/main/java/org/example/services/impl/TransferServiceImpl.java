@@ -42,7 +42,8 @@ public class TransferServiceImpl implements TransferService {
       TransactionStatus.EFETIVADA,
       1,
       TransactionType.SAIDA,
-      accOutputId
+      accOutputId,
+      null
     );
     AbstractTransaction transactionInput = servTransaction.create(
       value,
@@ -51,7 +52,8 @@ public class TransferServiceImpl implements TransferService {
       TransactionStatus.EFETIVADA,
       1,
       TransactionType.ENTRADA,
-      accInputId
+      accInputId,
+      null
     );
     Transfer transfer = new Transfer(transactionOutput, transactionInput);
     repoTransfer.save(transfer);

@@ -6,10 +6,10 @@ import lombok.Builder;
 
 @Builder
 public record StandardError(
-  LocalDateTime timestamp,
-  Integer status,
-  String error,
-  String message,
-  String path,
-  List<String> validationErros
-) {}
+    LocalDateTime timestamp,
+    Integer status,
+    String error,
+    String message,
+    String path,
+    List<String> validationErrors) {
+}

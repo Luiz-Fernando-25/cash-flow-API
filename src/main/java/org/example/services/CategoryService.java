@@ -11,9 +11,7 @@ public interface CategoryService {
 
   Category update(Integer categoryId, String name, CategoryType type);
 
-  List<Category> listAll();
-
-  List<Category> ListForType(CategoryType type);
+  List<Category> listAll(CategoryType type);
 
   void remove(Integer categoryId);
 }

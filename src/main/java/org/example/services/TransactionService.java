@@ -16,14 +16,6 @@ public interface TransactionService {
     TransactionStatus status,
     Integer categoryId,
     TransactionType transactionType,
-    Integer accountId
-  );
-
-  AbstractTransaction createCreditCardTransaction(
-    BigDecimal value,
-    String description,
-    Date date,
-    Integer categoryId,
     Integer accountId,
     Integer cardId
   );
