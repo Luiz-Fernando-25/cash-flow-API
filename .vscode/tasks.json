@@ -4,7 +4,7 @@
     {
       "label": "Gerar classes MapStruct",
       "type": "shell",
-      "command": "${workspaceFolder}/mvnw",
+      "command": "${workspaceFolder}\\mvnw.cmd",
       "args": ["compile", "-q"],
       "group": {
         "kind": "build",

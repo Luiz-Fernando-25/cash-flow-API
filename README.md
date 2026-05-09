@@ -77,6 +77,10 @@ git clone https://github.com/Luiz-Fernando-25/cash-flow-API.git
 3. **Compilar o projeto** *(obrigatório antes de abrir no VS Code ou qualquer IDE)*:
 
 ```bash
+# Windows (PowerShell)
+.\mvnw.cmd compile
+
+# Linux / Mac
 ./mvnw compile
 ```
 > Este passo é necessário porque o **MapStruct** gera as implementações dos mappers em tempo de compilação. Sem ele, o editor pode exibir falsos erros nos arquivos `*Mapper.java`. Se estiver usando **VS Code**, essa compilação é feita automaticamente ao abrir o projeto.
@@ -84,6 +88,10 @@ git clone https://github.com/Luiz-Fernando-25/cash-flow-API.git
 4. **Execução Local (Perfil H2):** A aplicação subirá na porta `8080` com banco de dados em memória.
 
 ```bash
+# Windows
+.\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=h2
+
+# Linux / Mac
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=h2
 ```
 
@@ -91,6 +99,11 @@ git clone https://github.com/Luiz-Fernando-25/cash-flow-API.git
 
 ```bash
 docker-compose up -d
+
+# Windows
+.\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=mysql
+
+# Linux / Mac
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=mysql
 ```
 
