@@ -52,7 +52,7 @@ public class TransactionServiceImpl implements TransactionService {
     this.servCreditCard = servCreditCard;
   }
 
-  private void validateBasicData(
+  private Date validateBasicData(
     BigDecimal value,
     String description,
     Date date
@@ -68,6 +68,7 @@ public class TransactionServiceImpl implements TransactionService {
       "A descrição tem que ter um valor valido!"
     );
     if (date == null) date = new Date();
+    return date;
   }
 
   private Category validateCategory(Integer categoryId) {
@@ -147,7 +148,7 @@ public class TransactionServiceImpl implements TransactionService {
     TransactionType transactionType,
     Integer accountId
   ) {
-    validateBasicData(value, description, date);
+    date = validateBasicData(value, description, date);
     Category category = validateCategory(categoryId);
     AbstractAccount account = validateAccount(accountId);
 
@@ -199,7 +200,7 @@ public class TransactionServiceImpl implements TransactionService {
     Integer accountId,
     Integer cardId
   ) {
-    validateBasicData(value, description, date);
+    date = validateBasicData(value, description, date);
     Category category = validateCategory(categoryId);
     AbstractAccount account = validateAccount(accountId);
     CreditCard creditCard = validateCreditCard(cardId);

@@ -8,7 +8,6 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface TransactionMapper {
-
   @Mapping(source = "category.id", target = "categoryId")
   @Mapping(source = "account.id", target = "accountId")
   @Mapping(target = "creditCardId", ignore = true)

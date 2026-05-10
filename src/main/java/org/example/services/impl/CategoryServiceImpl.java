@@ -59,6 +59,18 @@ public class CategoryServiceImpl implements CategoryService {
     if (name == null || name.trim().isEmpty()) throw new BusinessRuleException(
       "O nome não pode ser vazio!"
     );
+
+    boolean exists = repoCategory
+      .findAll()
+      .stream()
+      .anyMatch(c -> c.getName().equalsIgnoreCase(name));
+
+    if (exists) {
+      throw new BusinessRuleException(
+        "Já existe esse nome na lista de catogorias."
+      );
+    }
+
     category.setName(name);
 
     if (type != null) category.setType(type);
