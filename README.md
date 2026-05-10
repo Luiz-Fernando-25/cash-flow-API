@@ -1,91 +1,158 @@
-# Cash Flow API - Gerenciador Financeiro (Spring Boot)
+# 💰 Cash Flow API — Gerenciador Financeiro Pessoal
 
-O **Cash Flow API** é um backend de gerenciamento financeiro pessoal desenvolvido em Java. Originalmente concebido como uma aplicação CLI (Command Line Interface) com JDBC puro, o projeto está em **fase de migração** para uma arquitetura RESTful moderna utilizando o ecossistema Spring.
-Trata-se de um MVP (Minimum Viable Product) focado em um usuário único (Single-tenant), inspirado nas principais funcionalidades de controle de fluxo de caixa, permitindo o rastreio de despesas, receitas e transferências entre múltiplas contas e cartões de crédito.
+API REST para gerenciamento financeiro pessoal desenvolvida em **Java 17** com **Spring Boot 4**. Permite o controle completo de contas bancárias, carteiras, cartões de crédito, transações e transferências com regras de estorno automático e controle de fatura.
 
-## 🚀 Visão Geral e Arquitetura
+> **MVP Single-tenant** — focado em um único usuário, projetado para evolução futura com autenticação e multi-tenancy.
 
-O sistema foi desenhado utilizando os princípios de Clean Architecture e SOLID. Com a atual migração, estamos substituindo a manipulação manual de banco de dados (ORM manual/JDBC) pela robustez do **Spring Data JPA**, e a interface de linha de comando por **Controladores REST**.
+---
 
-## 🛠️ Stack Tecnológica (Atualizada)
+## 📐 Arquitetura
 
-- **Linguagem:** Java 17
+O projeto segue uma arquitetura em camadas com princípios de **Clean Architecture** e **SOLID**:
 
-- **Framework Principal:** Spring Boot
-
-- **Gerenciador de Dependências:** Maven
-
-- **Banco de Dados:** (Multi-environment): H2 Database (Dev/Test) e MySQL (Produção/Docker)
-
-- **Acesso a Dados:** Spring Data JPA (Hibernate)
-
-- **Mapeamento de Objetos:** MapStruct
-
-- **Boilerplate:** Lombok
-
-- **Infraestrutura:** Docker & Docker Compose
-
-- **Arquitetura:** Camadas (Domain, Repository, Config, Services, Controller)
-
-## 🚧 Status do Projeto: Em Migração (Refatoração CLI ➡️ REST API)
-
-Atualmente, o projeto está passando por uma refatoração arquitetural profunda.
-
-- [x] **Fase 1:** Setup do ecossistema Spring, perfis YAML (h2 e mysql) e limpeza de pacotes legados (UI/CLI).
-- [x] **Fase 2:** Mapeamento Objeto-Relacional (JPA/Entities) da camada de Domínio.
-- [x] **Fase 3:** Refatoração da Camada de Acesso a Dados (Spring Data Repositories).
-- [x] **Fase 4:** Criação de Controllers, DTOs e Mappers (MapStruct).
-- [x] **Fase 5:** Implementação de Exceptions e Global Exception Handler.
-- [x] **Fase 6:** Refatoração dos Services e Controllers para o padrão RESTful.
-- [ ] **Fase 7:** Testes Automatizados e Documentação (Swagger/OpenAPI).
-
-## 📂 Estrutura de Pacotes
-
-A arquitetura foi desenhada utilizando os princípios de Clean Code e Inversão de Dependência, o que facilitará uma futura migração para frameworks como o Spring Boot. O projeto está dividido em:
-
-- **`org.example.config.database`**: Configurações de conexão (JDBC) e scripts de inicialização do banco de dados H2 (DDL/DML).
-- **`org.example.domain`**: Contém o coração das regras de negócio.
-  - **`.models`**: Entidades de domínio (AbstractAccount, CreditCard, Transactions, etc.) utilizando herança e polimorfismo.
-  - **`.enums`**: Tipos padronizados (AccountType, TransactionStatus, etc.).
-  - **`.interfaces`**: Contratos de comportamento base (ex: operações de depósito/saque).
-- **`org.example.repositories`**: Padrão Repository para abstração do acesso aos dados, com implementações puras em SQL para o H2.
-- **`org.example.services`**: Camada de lógica de negócio e orquestração.
-  - **`.impl`**: Implementações concretas dos serviços, garantindo a matemática financeira e as regras de estorno automático.
-- **`org.example.ui`**: Componentes da Interface de Linha de Comando (CLI), organizados em Menus modulares (AccountMenu, TransactionMenu, etc.).
-
-## 📋 Requisitos Implementados
-
-- [x] **RF-01: Gestão de Contas e Carteiras:** Cadastro de contas bancárias e carteiras físicas com saldo consolidado (Permite saldo negativo).
-- [x] **RF-02: Gestão de Cartões de Crédito:** Cadastro de cartões vinculados a bancos com controle de limites, dia de fechamento e vencimento.
-- [x] **RF-03: Gestão de Categorias:** Classificação de transações por tipo (Receita, Despesa, Movimentação).
-- [x] **RF-04: Registro de Transações:** Suporte a entradas e saídas normais, com alteração dinâmica de status (Pendente/Efetivada) alterando o saldo da conta em tempo real.
-- [x] **RF-05: Transferências:** Orquestração de movimentação entre duas contas distintas, com espelhamento de transações (Saída A -> Entrada B) e estorno em cascata.
-- [x] **RF-06: Despesas de Cartão:** Registro de transações vinculadas a um cartão de crédito, respeitando a data da fatura atual.
-
-## 🔧 Como Executar (Ambiente de Desenvolvimento)
-
-A aplicação possui suporte a múltiplos perfis de configuração (profiles).
-
-1. **Pré-requisitos:** Ter o JDK 17 e Maven instalados.
-
-2. **Clonar o repositório:**
-
-```bash
-git clone https://github.com/Luiz-Fernando-25/cash-flow-API.git
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Controllers (REST)                   │
+│   CategoryController · AccountController · ...          │
+├─────────────────────────────────────────────────────────┤
+│                DTOs + Mappers (MapStruct)                │
+│   Request/Response DTOs · CategoryMapper · ...          │
+├─────────────────────────────────────────────────────────┤
+│                   Services (Negócio)                    │
+│   Validações · Estornos · Orquestração financeira       │
+├─────────────────────────────────────────────────────────┤
+│                 Repositories (Spring Data JPA)          │
+│   AccountRepository · TransactionRepository · ...       │
+├─────────────────────────────────────────────────────────┤
+│                   Domain (Entidades JPA)                │
+│   AbstractAccount · CreditCard · Transactions · ...     │
+├─────────────────────────────────────────────────────────┤
+│              Exceptions (GlobalExceptionHandler)        │
+│   BusinessRuleException · ResourceNotFoundException     │
+└─────────────────────────────────────────────────────────┘
 ```
 
-3. **Compilar o projeto** *(obrigatório antes de abrir no VS Code ou qualquer IDE)*:
+---
+
+## 🛠️ Stack Tecnológica
+
+| Camada | Tecnologia |
+|---|---|
+| **Linguagem** | Java 17 |
+| **Framework** | Spring Boot 4.0.6 |
+| **Build** | Maven (com Maven Wrapper) |
+| **Banco de Dados** | H2 (dev/test) · MySQL (produção/Docker) |
+| **ORM** | Spring Data JPA (Hibernate) |
+| **Mapeamento DTO ↔ Entity** | MapStruct 1.5.5 |
+| **Boilerplate** | Lombok |
+| **Documentação API** | Springdoc OpenAPI (Swagger UI) |
+| **Testes** | JUnit 5 · Mockito · 89 testes unitários |
+| **Infraestrutura** | Docker & Docker Compose |
+
+---
+
+## 📋 Funcionalidades
+
+### Contas (`/api/accounts`)
+- Cadastro de contas bancárias (`BANCO`) e carteiras físicas (`CARTEIRA`)
+- Depósito e saque com validação de valores
+- Permite saldo negativo (sem bloqueio por insuficiência)
+- Listagem com filtro por tipo
+
+### Categorias (`/api/categories`)
+- Classificação de transações por tipo (`RECEITA`, `DESPESA`)
+- Validação de nome duplicado
+- Categoria padrão (ID 1) protegida contra exclusão
+
+### Cartões de Crédito (`/api/credit-cards`)
+- Vinculação obrigatória a uma conta bancária
+- Controle de limite, saldo da fatura, dia de fechamento e vencimento
+- Validação de dias (1-28) para compatibilidade com todos os meses
+
+### Transações (`/api/transactions`)
+- **Transações normais** (entrada/saída) com status `PENDENTE` ou `EFETIVADA`
+- **Transações de cartão** com cálculo automático da fatura vigente baseado no dia de fechamento
+- Estorno automático ao alterar status ou remover transação efetivada
+- Atualização em lote (`updateBatch`)
+- Busca com filtros combinados (status, categoria, tipo, conta, cartão)
+
+### Transferências (`/api/transfers`)
+- Espelhamento automático: cria uma transação de saída na conta A e uma de entrada na conta B
+- Estorno em cascata ao remover
+
+---
+
+## 🧪 Testes
+
+A camada de **Services** possui cobertura completa com **89 testes unitários** utilizando **JUnit 5** e **Mockito**:
+
+| Classe de Teste | Testes | Cobertura |
+|---|---|---|
+| `AccountServiceImplTest` | 19 | Completa |
+| `CategoryServiceImplTest` | 16 | Completa |
+| `CreditCardServiceImplTest` | 24 | Completa |
+| `TransactionServiceImplTest` | 24 | Completa |
+| `TransferServiceImplTest` | 6 | Completa |
+
+**Executar testes:**
+```bash
+# Windows
+.\mvnw.cmd test
+
+# Linux / Mac
+./mvnw test
+```
+
+---
+
+## ⚠️ Tratamento de Erros
+
+A API utiliza um `GlobalExceptionHandler` com respostas padronizadas:
+
+| Exceção | HTTP Status | Quando |
+|---|---|---|
+| `MethodArgumentNotValidException` | `400 Bad Request` | Validação de DTOs (`@NotBlank`, `@NotNull`) |
+| `ResourceNotFoundException` | `404 Not Found` | Entidade não encontrada pelo ID |
+| `BusinessRuleException` | `422 Unprocessable Entity` | Violação de regra de negócio |
+
+Formato de resposta de erro:
+```json
+{
+  "timestamp": "2026-05-10T19:00:00",
+  "status": 422,
+  "error": "Business rule violation",
+  "message": "Já existe esse nome na lista de categorias.",
+  "path": "/api/categories"
+}
+```
+
+---
+
+## 🔧 Como Executar
+
+### Pré-requisitos
+- JDK 17+
+- Docker (opcional, para MySQL)
+
+### 1. Clonar o repositório
+```bash
+git clone https://github.com/Luiz-Fernando-25/cash-flow-API.git
+cd cash-flow-API
+```
+
+### 2. Compilar o projeto
+> **Obrigatório** antes de abrir na IDE — o MapStruct gera implementações dos mappers em tempo de compilação.
 
 ```bash
-# Windows (PowerShell)
+# Windows
 .\mvnw.cmd compile
 
 # Linux / Mac
 ./mvnw compile
 ```
-> Este passo é necessário porque o **MapStruct** gera as implementações dos mappers em tempo de compilação. Sem ele, o editor pode exibir falsos erros nos arquivos `*Mapper.java`. Se estiver usando **VS Code**, essa compilação é feita automaticamente ao abrir o projeto.
 
-4. **Execução Local (Perfil H2):** A aplicação subirá na porta `8080` com banco de dados em memória.
+### 3. Executar com H2 (desenvolvimento)
+Banco em memória, sem configuração adicional. A aplicação sobe na porta `8080`.
 
 ```bash
 # Windows
@@ -95,8 +162,7 @@ git clone https://github.com/Luiz-Fernando-25/cash-flow-API.git
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=h2
 ```
 
-5. **Execução com MySQL (via Docker Compose):**
-
+### 4. Executar com MySQL (produção)
 ```bash
 docker-compose up -d
 
@@ -107,15 +173,60 @@ docker-compose up -d
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=mysql
 ```
 
-6. **Documentação interativa (Swagger UI):** Após iniciar, acesse:
+### 5. Acessar Swagger UI
 ```
 http://localhost:8080/swagger-ui/index.html
 ```
 
-## 🏗️ Próximos Passos (Roadmap)
+---
 
-- [ ] Fechamento de Faturas: Desenvolver a rotina de consolidação de gastos de cartão de crédito baseada no dia de vencimento.
+## 📂 Estrutura de Pacotes
+
+```
+src/main/java/org/example/
+├── Main.java
+├── config/                    # Configurações (DataSource, profiles)
+├── controllers/               # Endpoints REST (5 controllers)
+├── domain/
+│   ├── enums/                 # AccountType, TransactionStatus, TransactionType, CategoryType
+│   ├── interfaces/            # Contratos base (depósito/saque)
+│   └── models/                # Entidades JPA (10 classes com herança e polimorfismo)
+├── dtos/                      # Request, Response e Update DTOs (15 records)
+├── exceptions/                # Exceções + GlobalExceptionHandler
+├── mappers/                   # Interfaces MapStruct (geração automática)
+├── repositories/              # Spring Data JPA Repositories
+└── services/
+    └── impl/                  # Regras de negócio (estornos, validações, fatura)
+
+src/test/java/org/example/
+└── services/impl/             # 89 testes unitários (JUnit 5 + Mockito)
+```
+
+---
+
+## 📊 Evolução do Projeto
+
+| Fase | Descrição | Status |
+|---|---|---|
+| 1 | Setup Spring Boot, perfis YAML (H2/MySQL), limpeza de pacotes CLI | ✅ |
+| 2 | Mapeamento JPA das entidades de domínio | ✅ |
+| 3 | Migração para Spring Data Repositories | ✅ |
+| 4 | Controllers REST, DTOs e Mappers (MapStruct) | ✅ |
+| 5 | Global Exception Handler e exceções customizadas | ✅ |
+| 6 | Padronização RESTful nível 2 (Richardson Maturity Model) | ✅ |
+| 7 | Testes unitários da camada de Services | ✅ |
+| 8 | Testes de Controllers (MockMvc) | 🔜 |
+| 9 | Fechamento de faturas de cartão de crédito | 🔜 |
+
+---
 
 ## 🤖 Sobre o Desenvolvimento
 
-Este projeto é parte de um estudo aprofundado de arquitetura backend e evolução de software. A transição de um modelo procedural/manual (JDBC/CLI) para um ecossistema moderno (Spring Boot/JPA) visa consolidar conhecimentos em injeção de dependências, ORM, design de APIs e arquitetura limpa.
+Projeto de estudo aprofundado de arquitetura backend e evolução de software. A transição de um modelo procedural (JDBC/CLI) para um ecossistema moderno (Spring Boot/JPA/REST) consolida conhecimentos em:
+
+- Injeção de dependências e inversão de controle
+- ORM e mapeamento objeto-relacional
+- Design de APIs RESTful
+- Testes automatizados com mocks
+- Tratamento de exceções padronizado
+- Arquitetura limpa e princípios SOLID
